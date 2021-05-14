@@ -1,0 +1,31 @@
+class Person {
+
+	define Person(this, name, age) {
+		this.name = name;
+		this.age = age;	
+	}
+}
+
+define are_friends(by_ref person1, by_ref person2) {
+	if person1.has_attr("friends") && person2.has_attr("friends") {
+		return (person1 in person2.friends) && (person2 in person1.friends);
+	}
+	return false;
+}	
+
+define main() {
+	
+	barney = Person("Barney", 31);
+	ted = Person("Ted", 30);
+	robin = Person("Robin", 29);
+	marshall = Person("Marshall", 30);
+	lily = Person("Lily", 30);
+
+	marshall.spouse = lily;
+
+	ted.friends = [marshall, lily, robin, barney];
+	marshall.friends = [lily, ted];
+	
+	print(are_friends(ted, marshall));
+	print(are_friends(marshall, barney));
+}	

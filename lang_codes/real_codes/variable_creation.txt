@@ -1,0 +1,19 @@
+define get_max_connections(n) {
+	return n * (n - 1) / 2;
+}
+
+define get_nodes(s) {
+	return len(s);
+}
+
+define main() {
+	nodes = get_nodes("My name");
+	connections = get_max_connections(nodes);
+	if connections < 10 {
+		print("Small graph");
+	} else if connections < 50 {
+		print("Medium graph");
+	} else {
+		print("Big graph");
+	}
+}

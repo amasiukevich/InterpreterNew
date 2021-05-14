@@ -1,0 +1,14 @@
+define make_squares(lst) {
+	new_list = [];
+	i = 0;
+	foreach i in lst {
+		new_list.append(i * i);
+	}
+	return new_list;
+}
+
+define main() {
+	foreach element in make_squares([1, 2, 3]) {
+		print(element);
+	}
+}

@@ -1,0 +1,22 @@
+class Dog {
+
+	define Dog(this, name, age) {
+		this.name = name;
+		this.age = age;		
+	}
+
+}
+
+
+
+define main() {
+
+	dog_sharick = Dog("Sharick", 12);
+	dog_shurick = Dog("Shurick", 5);
+	
+	dog_sharick.son = dog_shurick;
+
+	if dog_sharick.has_attr("son") {
+		print(dog_sharick.son.name);
+	}
+}
