@@ -241,7 +241,7 @@ class TestScanner(unittest.TestCase):
     def test_identifier(self):
 
         string_source = StringSource(
-            io.StringIO("is_prime_number = true;")
+            io.StringIO("is_prime = true;")
         )
 
         scanner = Scanner(source=string_source)
@@ -256,14 +256,15 @@ class TestScanner(unittest.TestCase):
 
         string_source.close()
 
+
         # TODO: beware of values of tokens
         self.assertListEqual(
             tokens,
             [
-                Token(TokenType.IDENTIFIER, Position(line=1, column=0)),
-                Token(TokenType.ASSIGN, Position(line=1, column=16)),
-                Token(TokenType.BOOL_LITERAL, Position(line=1, column=18)),
-                Token(TokenType.SEMICOLON, Position(line=1, column=22))
+                Token(TokenType.IDENTIFIER, Position(line=1, column=1), value="is_prime"),
+                Token(TokenType.ASSIGN, Position(line=1, column=10), value="="),
+                Token(TokenType.BOOL_LITERAL, Position(line=1, column=12), value="true"),
+                Token(TokenType.SEMICOLON, Position(line=1, column=16), value=";")
             ],
             "Something went wrong during identifier and boolean tokenization"
         )
@@ -275,8 +276,9 @@ class TestScanner(unittest.TestCase):
         )
 
         scanner = Scanner(file_source)
-        current_token = scanner.token
 
+        scanner.next_token()
+        current_token = scanner.token
         tokens = []
 
         while current_token.token_type != TokenType.EOF:
@@ -285,103 +287,89 @@ class TestScanner(unittest.TestCase):
             current_token = scanner.token
 
         file_source.close()
-
         # TODO: beware of values of tokens
         self.assertListEqual(
             tokens,
             [
-                Token(TokenType.COMMENT, Position(line=1, column=0)),
-                Token(TokenType.COMMENT, Position(line=2, column=0)),
-                Token(TokenType.COMMENT, Position(line=3, column=0))
+                Token(TokenType.COMMENT, Position(line=1, column=1), value="# this is the comment"),
+                Token(TokenType.COMMENT, Position(line=2, column=1), value="# 234134 th1s 1$ also # a comment"),
+                Token(TokenType.COMMENT, Position(line=3, column=1), value="# and :sd...a91.4/3 is comment either")
             ],
             "Something went wrong while detecting comment tokens"
         )
 
 
 
-    def test_keyword(self):
+    def test_keyword1(self):
 
-        file_source = FileSource(
-            io.open("../../lang_codes/real_codes/iterate_through_func_result.txt")
+        string_source = StringSource(
+            io.StringIO("if (true) {} else if {} else {}")
         )
 
-        scanner = Scanner(file_source)
+        scanner = Scanner(string_source)
+        scanner.next_token()
         current_token = scanner.token
-
         tokens = []
 
         while current_token.token_type != TokenType.EOF:
             tokens.append(current_token)
             scanner.next_token()
             current_token = scanner.token
-        file_source.close()
 
-        # TODO: beware of values of tokens
+        string_source.string_stream.close()
+
+
         self.assertListEqual(
             tokens,
             [
-                Token(TokenType.DEFINE, Position(line=1, column=0)),
-                Token(TokenType.IDENTIFIER, Position(line=1, column=7)),
-                Token(TokenType.OPEN_PARENTHESIS, Position(line=1, column=19)),
-                Token(TokenType.IDENTIFIER, Position(line=1, column=20)),
-                Token(TokenType.CLOSING_PARENTHESIS, Position(line=1, column=23)),
-                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=1, column=25)),
-                Token(TokenType.IDENTIFIER, Position(line=2, column=4)),
-                Token(TokenType.ASSIGN, Position(line=2, column=13)),
-                Token(TokenType.OPEN_BRACKET, Position(line=2, column=15)),
-                Token(TokenType.CLOSING_BRACKET, Position(line=2, column=16)),
-                Token(TokenType.SEMICOLON, Position(line=2, column=17)),
-                Token(TokenType.IDENTIFIER, Position(line=3, column=4)),
-                Token(TokenType.ASSIGN, Position(line=3, column=6)),
-                Token(TokenType.NUMERIC_LITERAL, Position(line=3, column=8)),
-                Token(TokenType.SEMICOLON, Position(line=3, column=9)),
-                Token(TokenType.FOREACH, Position(line=4, column=4)),
-                Token(TokenType.IDENTIFIER, Position(line=4, column=12)),
-                Token(TokenType.IN, Position(line=4, column=14)),
-                Token(TokenType.IDENTIFIER, Position(line=4, column=17)),
-                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=4, column=21)),
-                Token(TokenType.IDENTIFIER, Position(line=5, column=8)),
-                Token(TokenType.ACCESS, Position(line=5, column=16)),
-                Token(TokenType.IDENTIFIER, Position(line=5, column=17)),
-                Token(TokenType.OPEN_PARENTHESIS, Position(line=5, column=23)),
-                Token(TokenType.IDENTIFIER, Position(line=5, column=24)),
-                Token(TokenType.MULTIPLY, Position(line=5, column=26)),
-                Token(TokenType.IDENTIFIER, Position(line=5, column=28)),
-                Token(TokenType.CLOSING_PARENTHESIS, Position(line=5, column=29)),
-                Token(TokenType.SEMICOLON, Position(line=5, column=30)),
-                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=6, column=4)),
-                Token(TokenType.RETURN, Position(line=7, column=4)),
-                Token(TokenType.IDENTIFIER, Position(line=7, column=11)),
-                Token(TokenType.SEMICOLON, Position(line=7, column=19)),
-                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=8, column=0)),
-
-                # main function
-                Token(TokenType.DEFINE, Position(line=10, column=0)),
-                Token(TokenType.IDENTIFIER, Position(line=10, column=7)),
-                Token(TokenType.OPEN_PARENTHESIS, Position(line=10, column=11)),
-                Token(TokenType.CLOSING_PARENTHESIS, Position(line=10, column=12)),
-                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=10, column=14)),
-                Token(TokenType.FOREACH, Position(line=11, column=4)),
-                Token(TokenType.IDENTIFIER, Position(line=11, column=12)),
-                Token(TokenType.IN, Position(line=11, column=20)),
-                Token(TokenType.IDENTIFIER, Position(line=11, column=23)),
-                Token(TokenType.OPEN_PARENTHESIS, Position(line=11, column=35)),
-                Token(TokenType.OPEN_BRACKET, Position(line=11, column=36)),
-                Token(TokenType.NUMERIC_LITERAL, Position(line=11, column=37)),
-                Token(TokenType.COMMA, Position(line=11, column=38)),
-                Token(TokenType.NUMERIC_LITERAL, Position(line=11, column=40)),
-                Token(TokenType.COMMA, Position(line=11, column=41)),
-                Token(TokenType.NUMERIC_LITERAL, Position(line=11, column=43)),
-                Token(TokenType.COMMA, Position(line=11, column=44)),
-                Token(TokenType.CLOSING_BRACKET, Position(line=11, column=45)),
-                Token(TokenType.CLOSING_PARENTHESIS, Position(line=11, column=46)),
-                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=11, column=48)),
-                Token(TokenType.IDENTIFIER, Position(line=12, column=8)),
-                Token(TokenType.OPEN_PARENTHESIS, Position(line=12, column=13)),
-                Token(TokenType.IDENTIFIER, Position(line=12, column=14)),
-                Token(TokenType.CLOSING_PARENTHESIS, Position(line=12, column=21)),
-                Token(TokenType.SEMICOLON, Position(line=12, column=22)),
-                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=13, column=4)),
-                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=14, column=0)),
+                Token(TokenType.IF, Position(line=1, column=1), value="if"),
+                Token(TokenType.OPEN_PARENTHESIS, Position(line=1, column=4), value="("),
+                Token(TokenType.BOOL_LITERAL, Position(line=1, column=5), value="true"),
+                Token(TokenType.CLOSING_PARENTHESIS, Position(line=1, column=9), value=")"),
+                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=1, column=11), value="{"),
+                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=1, column=12), value="}"),
+                Token(TokenType.ELSE, Position(line=1, column=14), value="else"),
+                Token(TokenType.IF, Position(line=1, column=19), value="if"),
+                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=1, column=22), value="{"),
+                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=1, column=23), value="}"),
+                Token(TokenType.ELSE, Position(line=1, column=25), value="else"),
+                Token(TokenType.OPEN_CURLY_BRACKET, Position(line=1, column=30), value="{"),
+                Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=1, column=31), value="}"),
             ]
         )
+
+
+    def test_keywords2(self):
+
+        string_source = StringSource(
+            io.StringIO("while foreach return define this reflect by_ref class reflect recursive")
+        )
+
+        scanner = Scanner(string_source)
+        scanner.next_token()
+        current_token = scanner.token
+        tokens = []
+
+        while current_token.token_type != TokenType.EOF:
+            tokens.append(current_token)
+            scanner.next_token()
+            current_token = scanner.token
+
+        string_source.string_stream.close()
+
+        self.assertListEqual(
+            tokens,
+            [
+                Token(TokenType.WHILE, Position(line=1, column=1), value="while"),
+                Token(TokenType.FOREACH, Position(line=1, column=7), value="foreach"),
+                Token(TokenType.RETURN, Position(line=1, column=15), value="return"),
+                Token(TokenType.DEFINE, Position(line=1, column=22), value="define"),
+                Token(TokenType.THIS, Position(line=1, column=29), value="this"),
+                Token(TokenType.REFLECT, Position(line=1, column=34), value="reflect"),
+                Token(TokenType.BY_REF, Position(line=1, column=42), value="by_ref"),
+                Token(TokenType.CLASS, Position(line=1, column=49), value="class"),
+                Token(TokenType.REFLECT, Position(line=1, column=55), value="reflect"),
+                Token(TokenType.RECURSIVE, Position(line=1, column=63), value="recursive")
+            ]
+        )
+

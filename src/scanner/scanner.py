@@ -18,6 +18,10 @@ class Scanner():
         self.kw_mapper = KeywordMapper()
         self.token = Token(TokenType.UNKNOWN)
 
+        # for keywords and identifiers
+        self.tmp_kw_id = ""
+        self.tmp_kw_len = 0
+
 
 
     def next_token(self):
@@ -35,11 +39,11 @@ class Scanner():
         elif self.construct_string_literal():
             return
         elif self.construct_identifier():
-            pass
+            return
         elif self.construct_comment():
-            pass
+            return
         elif self.construct_keyword():
-            pass
+            return
 
         else:
             self.token = Token(TokenType.UNKNOWN, position=self.token_position)
@@ -249,14 +253,88 @@ class Scanner():
 
 
     def construct_identifier(self):
-        pass
+
+        self.tmp_kw_id = ""
+        self.tmp_kw_len = 0
+
+        if self.is_begin_valid():
+
+            while self.is_valid_part() and self.tmp_kw_len < Token.MAX_IDENTIFIER_LENGHT:
+
+                self.tmp_kw_id += self.source.character
+                self.tmp_kw_len += 1
+                self.source.read_char()
+
+            # TODO: custom exceptions here
+            if self.is_valid_part():
+                raise Exception("Exceeded length of the identifier")
+
+            if self.construct_keyword():
+                return True
+
+            self.token = Token(TokenType.IDENTIFIER, position=self.token_position, value=str(self.tmp_kw_id))
+            return True
+
+        else:
+            return False
+
+
+    def is_begin_valid(self):
+
+        # for keywords and identifiers
+
+        if self.source.character.isalpha():
+
+            self.tmp_kw_id += self.source.character
+            self.tmp_kw_len += 1
+            self.source.read_char()
+
+            return True
+
+        # for identifiers only
+        elif self.source.character in ["$", "_"]:
+
+            self.tmp_kw_id += self.source.character
+            self.source.read_char()
+
+            if self.is_valid_part():
+
+                self.tmp_kw_id += self.source.character
+                self.source.read_char()
+                self.tmp_len += 2
+
+                return True
+            else:
+                raise Exception("Invalid identifier")
+        else:
+            return False
+
+
+
+    def is_valid_part(self):
+        return isinstance(self.source.character, str) and (self.source.character.isalnum() or self.source.character == "_")
 
 
 
     def construct_keyword(self):
-        pass
+
+        tmp_keyword_name = self.kw_mapper.KEYWORD_MAP.get(self.tmp_kw_id)
+        if tmp_keyword_name:
+            self.token = Token(token_type=tmp_keyword_name, position=self.token_position, value=str(self.tmp_kw_id))
+
+        return bool(tmp_keyword_name)
 
 
 
     def construct_comment(self):
-        pass
+
+        is_recognized = self.source.character == "#"
+
+        if is_recognized:
+            comment_value = ""
+            # all of the character until the end of the line or EOF skipping and adding to the commented
+            while self.source.character not in ["\n", -1]:
+                comment_value += self.source.character
+                self.source.read_char()
+            self.token = Token(TokenType.COMMENT, position=self.token_position, value=comment_value)
+        return is_recognized

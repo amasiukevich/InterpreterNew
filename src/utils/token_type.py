@@ -43,7 +43,6 @@ class TokenType(Enum):
 
     # Default keywords
     IF = auto(),                # if
-    ELSE_IF = auto(),           # else if
     ELSE = auto(),              # else
     WHILE = auto(),             # while
     FOREACH = auto(),           # foreach
@@ -51,7 +50,7 @@ class TokenType(Enum):
     DEFINE = auto(),            # define
     THIS = auto(),              # this
     REFLECT = auto(),           # reflect
-    REFLECT_RECURSIVE = auto(), # reflect recursive
+    RECURSIVE = auto(),         # recursive (for 'reflect recursive')
     BY_REF = auto(),            # by_ref
     CLASS = auto(),             # class
     IN = auto(),                # in

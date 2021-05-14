@@ -32,6 +32,9 @@ class FileSource(BaseSource):
     def get_curr_char(self):
         return self.character
 
+    def close(self):
+        self.reader.close()
+
 
     def next(self):
         pass
