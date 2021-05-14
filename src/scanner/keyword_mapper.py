@@ -4,7 +4,6 @@ class KeywordMapper():
 
     KEYWORD_MAP = {
         'if': TokenType.IF,
-        'else if': TokenType.ELSE_IF,
         'else': TokenType.ELSE,
         'while': TokenType.WHILE,
         'foreach': TokenType.FOREACH,
@@ -12,7 +11,7 @@ class KeywordMapper():
         'define': TokenType.DEFINE,
         'this': TokenType.THIS,
         'reflect': TokenType.REFLECT,
-        'reflect recursive': TokenType.REFLECT_RECURSIVE,
+        'recursive': TokenType.RECURSIVE,
         'by_ref': TokenType.BY_REF,
         'class': TokenType.CLASS,
         'true': TokenType.BOOL_LITERAL,
