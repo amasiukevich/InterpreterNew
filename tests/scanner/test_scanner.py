@@ -198,10 +198,11 @@ class TestScanner(unittest.TestCase):
     def test_string_literal(self):
 
         string_source = StringSource(
-            io.StringIO('quote = "To be or not to be.";')
+            io.StringIO('= "To be or not to be.";')
         )
 
         scanner = Scanner(source=string_source)
+        scanner.next_token()
         current_token = scanner.token
         tokens = []
 
@@ -210,19 +211,32 @@ class TestScanner(unittest.TestCase):
             scanner.next_token()
             current_token = scanner.token
 
+
         string_source.close()
 
         # TODO: beware of values of tokens
         self.assertListEqual(
             tokens,
             [
-                Token(TokenType.IDENTIFIER, Position(line=1, column=0)),
-                Token(TokenType.ASSIGN, Position(line=1, column=6)),
-                Token(TokenType.STRING_LITERAL, Position(line=1, column=8)),
-                Token(TokenType.SEMICOLON, Position(line=1, column=29))
+                Token(TokenType.ASSIGN, Position(line=1, column=1)),
+                Token(TokenType.STRING_LITERAL, Position(line=1, column=3)),
+                Token(TokenType.SEMICOLON, Position(line=1, column=24))
             ],
             "Something went wrong during the string literal tokenization"
         )
+
+    def test_not_closed_exception(self):
+
+
+        # test if raised exception for missing "
+        string_source = StringSource(
+            io.StringIO('"To be or not to be.;')
+        )
+
+        scanner = Scanner(source=string_source)
+
+        self.assertRaisesRegex(Exception,"", scanner.next_token, msg="Missing closing \"")
+
 
     def test_identifier(self):
 
@@ -231,6 +245,7 @@ class TestScanner(unittest.TestCase):
         )
 
         scanner = Scanner(source=string_source)
+        scanner.next_token()
         current_token = scanner.token
         tokens = []
 

@@ -33,7 +33,7 @@ class Scanner():
         elif self.construct_number():
             return
         elif self.construct_string_literal():
-            pass
+            return
         elif self.construct_identifier():
             pass
         elif self.construct_comment():
@@ -224,7 +224,27 @@ class Scanner():
 
 
     def construct_string_literal(self):
-        pass
+
+        if self.source.character != "\"":
+            return False
+
+        str_literal_value = ""
+        self.source.read_char()
+
+        while self.source.character != "\"":
+
+            if self.source.character in [-1, "\n"]:
+                # TODO: custom exception here
+                raise Exception("Missing closing \"")
+
+            str_literal_value += str(self.source.character)
+            self.source.read_char()
+
+        self.token = Token(TokenType.STRING_LITERAL, position=self.token_position, value=str_literal_value)
+        self.source.read_char()
+
+        return True
+
 
 
 
