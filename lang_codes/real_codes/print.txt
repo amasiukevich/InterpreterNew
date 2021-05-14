@@ -1,0 +1,5 @@
+define main() {
+	name = "Anton";
+	print("Hello World");
+	print("My name is ", name);
+}

@@ -1,0 +1,27 @@
+define is_prime(a) {
+	
+	# dummy implementation
+	i = 2;
+	is_prime = true;
+	while i < a && is_prime{
+		if a % i == 0 {
+			is_prime = false;
+		}
+	}
+
+	return is_prime;
+}
+
+
+define main() {
+	
+	# finding all prime 6-figures numbers that end in 9
+	
+	number = 2;
+	while number < 100000 {
+		if (is_prime(number) && number >= 100000 && number % 100000 == 9) {
+			print(number);
+		}
+		number = number + 1;
+	}
+}

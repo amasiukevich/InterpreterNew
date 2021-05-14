@@ -1,0 +1,16 @@
+class Person {
+	
+	define Person(this, name, age) {
+		this.name = name;
+		this.age = age;
+	}
+}
+
+
+define main () {
+	
+	david = restore("some_file.json");
+	for attr in david {
+		print(attr);
+	} 
+}

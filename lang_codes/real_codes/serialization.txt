@@ -1,0 +1,19 @@
+class Person {
+	
+	define Person(this, name, age) {
+		this.name = name;
+		this.age = age;
+	}
+}
+
+define main() {
+	
+	david = Person("David", 45);
+
+	steve = Person("Steve", 43);
+	
+	david.friend = steve;
+	
+	serialize(david, "david.json"); # creates a file david.json in the configured director
+
+}

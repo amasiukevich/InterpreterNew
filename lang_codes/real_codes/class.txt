@@ -1,0 +1,39 @@
+class Person {
+	
+
+	define Person(this, name, age) {
+		this.name = name;
+		this.age = age;
+	}
+}
+
+class Pet {
+	
+	define Pet(this, name) {
+		this.name = name;
+	}
+}
+
+
+define main() {
+
+	david = Person("David", 45);
+	hannah = Person("Hannah", 40);
+
+	sarah = Person("Sarah", 15);
+
+	andy = Person("Andy", 21);
+
+	gosha = Pet("Gosha");
+
+	david.children = [sarah, andy];
+	david.wife = hannah;
+
+	hannah.children = [sarah];
+	
+	sarah.pet = gosha;
+	
+	reflect david;
+
+	reflect recursive hannah;
+}
