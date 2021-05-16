@@ -1,9 +1,12 @@
 from src.data_source.string_source import StringSource
 from src.data_source.file_source import FileSource
+from src.exceptions.scanning_exception import ScanningException
 from src.scanner.scanner import Scanner
 from src.utils.token_type import TokenType
 from src.utils.token import Token
 from src.utils.position import Position
+
+from src.exceptions.scanner_exception import ScannerException
 
 import io
 import os
@@ -11,6 +14,20 @@ import os
 import unittest
 
 class TestScanner(unittest.TestCase):
+
+
+    def test_invalid_source(self):
+
+        with self.assertRaises(ScannerException) as cm:
+            Scanner(source="string_source")
+
+        the_exception = cm.exception
+
+        self.assertEqual(
+            the_exception.message,
+            "The given source is not an instance of BaseSource"
+        )
+
 
     def test_ignoring_whitespaces(self):
 
@@ -33,6 +50,7 @@ class TestScanner(unittest.TestCase):
         self.assertListEqual(chars, real_chars, "Doesn't ignore whitespaces")
 
 
+
     def test_eof_creation(self):
 
         string_stream_eof = io.StringIO("")
@@ -45,6 +63,8 @@ class TestScanner(unittest.TestCase):
 
         self.assertEqual(scanner.token.token_type, TokenType.EOF, "Token must be of type EOF")
 
+
+
     def test_single_param_creation(self):
 
         string_source = StringSource(
@@ -52,7 +72,6 @@ class TestScanner(unittest.TestCase):
         )
 
         scanner = Scanner(source=string_source)
-
         scanner.next_token()
         current_token = scanner.token
         tokens = []
@@ -120,6 +139,48 @@ class TestScanner(unittest.TestCase):
         )
 
 
+
+    def test_leading_zero(self):
+
+        string_source = StringSource(
+            io.StringIO("010")
+        )
+
+        scanner = Scanner(source=string_source)
+
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+        the_exception = cm.exception
+
+        self.assertEqual(
+            the_exception.message,
+            f"Scanning exception at position {scanner.token_position}:\n"
+            f"Non-zero number can't contain anything after zero"
+        )
+
+
+    def test_max_number(self):
+
+        string_source = StringSource(
+            io.StringIO("1000000000000000000000000000000000;")
+        )
+
+        scanner = Scanner(string_source)
+
+
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+        the_exception = cm.exception
+
+        self.assertEqual(
+            the_exception.message,
+            f"Scanning exception at position {scanner.token_position}:\n"
+            f"Max allowed number value is {Token.MAX_NUMBER}"
+        )
+
+
     def test_number(self):
 
         string_source = StringSource(
@@ -176,8 +237,6 @@ class TestScanner(unittest.TestCase):
 
         string_source.close()
 
-
-
         self.assertListEqual(
             tokens,
             [
@@ -190,8 +249,6 @@ class TestScanner(unittest.TestCase):
             ],
             "Something went wrong during fraction number tokenization"
         )
-
-
 
 
 
@@ -214,16 +271,17 @@ class TestScanner(unittest.TestCase):
 
         string_source.close()
 
-        # TODO: beware of values of tokens
         self.assertListEqual(
             tokens,
             [
-                Token(TokenType.ASSIGN, Position(line=1, column=1)),
-                Token(TokenType.STRING_LITERAL, Position(line=1, column=3)),
-                Token(TokenType.SEMICOLON, Position(line=1, column=24))
+                Token(TokenType.ASSIGN, Position(line=1, column=1), value="="),
+                Token(TokenType.STRING_LITERAL, Position(line=1, column=3), value="To be or not to be"),
+                Token(TokenType.SEMICOLON, Position(line=1, column=24), value=";")
             ],
             "Something went wrong during the string literal tokenization"
         )
+
+
 
     def test_not_closed_exception(self):
 
@@ -235,7 +293,18 @@ class TestScanner(unittest.TestCase):
 
         scanner = Scanner(source=string_source)
 
-        self.assertRaisesRegex(Exception,"", scanner.next_token, msg="Missing closing \"")
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+
+        exception_message = cm.exception.message
+
+        self.assertEqual(
+            exception_message,
+            f"Scanning exception at position {scanner.token_position}:\n"
+            f"Missing closing \""
+        )
+
 
 
     def test_identifier(self):
@@ -256,8 +325,6 @@ class TestScanner(unittest.TestCase):
 
         string_source.close()
 
-
-        # TODO: beware of values of tokens
         self.assertListEqual(
             tokens,
             [
@@ -268,6 +335,47 @@ class TestScanner(unittest.TestCase):
             ],
             "Something went wrong during identifier and boolean tokenization"
         )
+
+
+
+    def test_id_length(self):
+
+        string_source = StringSource(
+            io.StringIO("is_prime_second_third_fourth_louis_armstrongs_anything_else_that_comes_to_your_mind_when_creating_a_too_long_identifier_name = true;")
+        )
+
+        scanner = Scanner(string_source)
+
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+        exception_message = cm.exception.message
+
+        self.assertEqual(
+            exception_message,
+            f"Scanning exception at position {scanner.token_position}:\n"
+            f"Exceeded length of the identifier"
+        )
+
+
+    def test_id_valid(self):
+
+        string_source = StringSource(
+            io.StringIO("$/")
+        )
+
+        scanner = Scanner(string_source)
+
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+        self.assertEqual(
+            cm.exception.message,
+            f"Scanning exception at position {scanner.token_position}:\n"
+            f"Invalid identifier"
+        )
+
+
 
     def test_comment(self):
 
@@ -287,7 +395,7 @@ class TestScanner(unittest.TestCase):
             current_token = scanner.token
 
         file_source.close()
-        # TODO: beware of values of tokens
+
         self.assertListEqual(
             tokens,
             [
@@ -318,7 +426,6 @@ class TestScanner(unittest.TestCase):
 
         string_source.string_stream.close()
 
-
         self.assertListEqual(
             tokens,
             [
@@ -337,6 +444,7 @@ class TestScanner(unittest.TestCase):
                 Token(TokenType.CLOSING_CURLY_BRACKET, Position(line=1, column=31), value="}"),
             ]
         )
+
 
 
     def test_keywords2(self):
@@ -373,3 +481,23 @@ class TestScanner(unittest.TestCase):
             ]
         )
 
+
+
+    def test_unknown_symbol(self):
+
+        string_source = StringSource(
+            io.StringIO("?self;")
+        )
+
+        scanner = Scanner(string_source)
+
+
+        with self.assertRaises(ScanningException) as cm:
+            scanner.next_token()
+
+        the_exception = cm.exception
+
+        self.assertEqual(
+            the_exception.message,
+            f"Scanning exception at position {scanner.token_position}:\nUnknown symbol"
+        )

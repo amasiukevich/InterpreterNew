@@ -1,12 +1,14 @@
+from ..exceptions.position_exception import PositionException
+
 class Position():
 
     def __init__(self, line=1, column=0):
-        # TODO: custom exceptions here
+        
         if line <= 0:
-            raise Exception("Line number cannot be less or equal to 0")
+            raise PositionException("Line number cannot be less or equal to 0")
 
         if column < 0:
-            raise Exception("Column number cannot be less than 0")
+            raise PositionException("Column number cannot be less than 0")
         self.line = line
         self.column = column
 
