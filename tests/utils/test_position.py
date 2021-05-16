@@ -1,4 +1,5 @@
 from src.utils.position import Position
+from src.exceptions.position_exception import PositionException
 import unittest
 
 class TestPosition(unittest.TestCase):
@@ -35,4 +36,27 @@ class TestPosition(unittest.TestCase):
         self.assertEqual(pos1, pos2, f"Positions should be equal\npos1: {repr(pos1)}\npos2: {repr(pos2)}")
 
 
+    def test_invalid_line(self):
 
+        with self.assertRaises(PositionException) as cm:
+            Position(line=-1, column=0)
+
+
+        the_exception = cm.exception
+        self.assertEqual(
+            the_exception.message,
+            "Line number cannot be less or equal to 0"
+        )
+
+
+
+    def test_invalid_column(self):
+
+        with self.assertRaises(PositionException) as cm:
+            Position(line=1, column=-10)
+
+        the_exception = cm.exception
+        self.assertEqual(
+            the_exception.message,
+            "Column number cannot be less than 0"
+        )

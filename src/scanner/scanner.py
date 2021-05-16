@@ -1,7 +1,10 @@
 from .keyword_mapper import KeywordMapper
 from ..data_source.base_source import BaseSource
+from ..exceptions.scanning_exception import ScanningException
 from ..utils.token import Token
 from ..utils.token_type import TokenType
+
+from ..exceptions.scanner_exception import ScannerException
 
 
 class Scanner():
@@ -11,8 +14,7 @@ class Scanner():
     def __init__(self, source):
 
         if not isinstance(source, BaseSource):
-            # TODO: make custom exception here
-            raise Exception("The given source is not an instance of BaseSource")
+            raise ScannerException(msg="The given source is not an instance of BaseSource")
 
         self.source = source
         self.kw_mapper = KeywordMapper()
@@ -47,7 +49,7 @@ class Scanner():
 
         else:
             self.token = Token(TokenType.UNKNOWN, position=self.token_position)
-            raise Exception(self.token_position, "Unknown symbol")
+            raise ScanningException(self.token_position, "Unknown symbol")
 
     def ignore_whitespaces(self):
 
@@ -175,8 +177,10 @@ class Scanner():
         if self.source.character == '0':
             self.source.read_char()
             if self.source.character.isdigit():
-                # TODO: custom exception here
-                raise Exception("Non-zero number can't contain anything after zero")
+                raise ScanningException(
+                    position=self.token_position,
+                    msg="Non-zero number can't contain anything after zero"
+                )
             else:
                 is_zero = True
 
@@ -189,12 +193,14 @@ class Scanner():
         value = 0
         while self.source.character.isdigit() and value < Token.MAX_NUMBER:
 
-            value += 10 * value * (ord(self.source.character) - ord('0'))
+            value = value * 10 + (ord(self.source.character) - ord('0'))
+
+            # value += 10 * value * (ord(self.source.character) - ord('0'))
             self.source.read_char()
 
         # Exceeded MAX_NUMBER
         if self.source.character.isdigit():
-            raise Exception(self.token_position, f"Max allowed number value is {Token.MAX_VALUE}")
+            raise ScanningException(self.token_position, f"Max allowed number value is {Token.MAX_NUMBER}")
 
         return value
 
@@ -238,8 +244,7 @@ class Scanner():
         while self.source.character != "\"":
 
             if self.source.character in [-1, "\n"]:
-                # TODO: custom exception here
-                raise Exception("Missing closing \"")
+                raise ScanningException(self.token_position, "Missing closing \"")
 
             str_literal_value += str(self.source.character)
             self.source.read_char()
@@ -265,9 +270,11 @@ class Scanner():
                 self.tmp_kw_len += 1
                 self.source.read_char()
 
-            # TODO: custom exceptions here
             if self.is_valid_part():
-                raise Exception("Exceeded length of the identifier")
+                raise ScanningException(
+                    self.token_position,
+                    "Exceeded length of the identifier"
+                )
 
             if self.construct_keyword():
                 return True
@@ -305,7 +312,7 @@ class Scanner():
 
                 return True
             else:
-                raise Exception("Invalid identifier")
+                raise ScanningException(self.token_position, msg="Invalid identifier")
         else:
             return False
 
