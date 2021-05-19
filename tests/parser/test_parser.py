@@ -21,3 +21,16 @@ class TestParser(unittest.TestCase):
 
         parser = Parser(scanner=scanner)
         parser.parse_program()
+
+
+    def test_class_creation(self):
+
+        string_stream = io.StringIO(
+            "class Person {} define main() { return a + b;}"
+        )
+
+        string_source = StringSource(string_stream)
+        scanner = Scanner(string_source)
+        parser = Parser(scanner=scanner)
+
+        parser.parse_program()
