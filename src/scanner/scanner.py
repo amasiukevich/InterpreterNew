@@ -25,6 +25,12 @@ class Scanner():
         self.tmp_kw_len = 0
 
 
+    def get_token_and_move(self):
+
+        temp_token = self.token
+        self.next_token()
+        return temp_token
+
 
     def next_token(self):
 
