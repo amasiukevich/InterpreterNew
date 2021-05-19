@@ -2,14 +2,14 @@ define is_prime(a) {
 	
 	# dummy implementation
 	i = 2;
-	is_prime = true;
-	while i < a && is_prime{
+	prime_number = true;
+	while i < a && prime_number {
 		if a % i == 0 {
-			is_prime = false;
+			prime_number = false;
 		}
 	}
 
-	return is_prime;
+	return prime_number;
 }
 
 
@@ -18,8 +18,8 @@ define main() {
 	# finding all prime 6-figures numbers that end in 9
 	
 	number = 2;
-	while number < 100000 {
-		if (is_prime(number) && number >= 100000 && number % 100000 == 9) {
+	while number < 1000000 {
+		if (is_prime(number) && number >= 100000 && number % 10 == 9) {
 			print(number);
 		}
 		number = number + 1;
