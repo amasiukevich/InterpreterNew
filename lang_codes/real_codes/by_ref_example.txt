@@ -6,7 +6,7 @@ class Person {
 	}
 }
 
-define are_friends(by_ref person1, by_ref person2) {
+define are_friends(person1, person2) {
 	if person1.has_attr("friends") && person2.has_attr("friends") {
 		return (person1 in person2.friends) && (person2 in person1.friends);
 	}
@@ -26,6 +26,6 @@ define main() {
 	ted.friends = [marshall, lily, robin, barney];
 	marshall.friends = [lily, ted];
 	
-	print(are_friends(ted, marshall));
-	print(are_friends(marshall, barney));
+	print(are_friends(by_ref ted, by_ref marshall));
+	print(are_friends(by_ref marshall, by_ref barney));
 }	

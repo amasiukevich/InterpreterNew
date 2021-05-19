@@ -9,13 +9,13 @@ class KeywordMapper():
         'foreach': TokenType.FOREACH,
         'return': TokenType.RETURN,
         'define': TokenType.DEFINE,
-        'this': TokenType.THIS,
-        'reflect': TokenType.REFLECT,
-        'recursive': TokenType.RECURSIVE,
-        'by_ref': TokenType.BY_REF,
+        'this': TokenType.THIS,     # TODO: create classes
+        'reflect': TokenType.REFLECT,   # TODO: create classes
+        'recursive': TokenType.RECURSIVE, # TODO: create classes
+        'by_ref': TokenType.BY_REF,         # TODO: use in class (Arguments.py)
         'class': TokenType.CLASS,
-        'true': TokenType.BOOL_LITERAL,
-        'false': TokenType.BOOL_LITERAL
+        'true': TokenType.BOOL_LITERAL,     # TODO: use in class BoolLiteral.py
+        'false': TokenType.BOOL_LITERAL     # TODO: use in class BoolLiteral.py
     }
 
     SINGLE_CHAR_MAP = {
