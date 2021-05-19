@@ -59,9 +59,10 @@ class Scanner():
 
     def ignore_whitespaces(self):
 
-        if self.source.character != -1:
-            while self.source.character.isspace():
-                self.source.read_char()
+        # if self.source.character != -1:
+
+        while self.source.character != -1 and self.source.character.isspace():
+            self.source.read_char()
 
 
 

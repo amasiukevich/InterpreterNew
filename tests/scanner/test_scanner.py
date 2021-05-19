@@ -501,3 +501,27 @@ class TestScanner(unittest.TestCase):
             the_exception.message,
             f"Scanning exception at position {scanner.token_position}:\nUnknown symbol"
         )
+
+
+
+    def test_custom_file(self):
+
+
+        file_source = FileSource(
+            io.open("../../lang_codes/real_codes/recursion.txt")
+        )
+
+        scanner = Scanner(file_source)
+
+        scanner.next_token()
+        current_token = scanner.token
+        tokens = []
+
+        while current_token.token_type != TokenType.EOF:
+            tokens.append(current_token)
+            scanner.next_token()
+            current_token = scanner.token
+
+        file_source.close()
+
+        breakpoint()

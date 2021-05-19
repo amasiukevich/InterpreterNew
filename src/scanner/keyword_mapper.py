@@ -15,7 +15,8 @@ class KeywordMapper():
         'by_ref': TokenType.BY_REF,         # TODO: use in class (Arguments.py)
         'class': TokenType.CLASS,
         'true': TokenType.BOOL_LITERAL,     # TODO: use in class BoolLiteral.py
-        'false': TokenType.BOOL_LITERAL     # TODO: use in class BoolLiteral.py
+        'false': TokenType.BOOL_LITERAL,     # TODO: use in class BoolLiteral.py
+        'in': TokenType.IN
     }
 
     SINGLE_CHAR_MAP = {

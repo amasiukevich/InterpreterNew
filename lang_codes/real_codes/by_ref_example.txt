@@ -28,4 +28,4 @@ define main() {
 	
 	print(are_friends(by_ref ted, by_ref marshall));
 	print(are_friends(by_ref marshall, by_ref barney));
-}	
+}
