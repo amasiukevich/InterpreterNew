@@ -64,11 +64,13 @@ class Parser:
         classes = {}
 
         while self.scanner.token.token_type != TokenType.EOF:
+
             function = self.parse_function()
             _class = self.parse_class()
 
             if function:
                 functions[function.identifier] = function
+
             if _class:
                 classes[_class.identifier] = _class
 
@@ -134,19 +136,20 @@ class Parser:
     def parse_params(self):
 
         params = Parameters()
-        self.check_current_token(TokenType.IDENTIFIER)
-        identifier = self.scanner.get_token_and_move()
+        if self.compare_token_types(TokenType.IDENTIFIER):
 
-        params.add_parameter(identifier.value)
-
-
-        while self.compare_token_types(TokenType.COMMA):
-
-            self.scanner.next_token()
-            self.check_current_token(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
             params.add_parameter(identifier.value)
+
+
+            while self.compare_token_types(TokenType.COMMA):
+
+                self.scanner.next_token()
+                self.check_current_token(TokenType.IDENTIFIER)
+                identifier = self.scanner.get_token_and_move()
+
+                params.add_parameter(identifier.value)
 
         return params
 
