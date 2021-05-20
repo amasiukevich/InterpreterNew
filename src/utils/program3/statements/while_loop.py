@@ -9,6 +9,8 @@ class WhileLoop(Loop):
         self.logical_expr = expression
         self.body = body
 
-
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
         return f"while {self.logical_expr}\n{self.body}"

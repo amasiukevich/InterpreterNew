@@ -10,4 +10,14 @@ class ClassBlock(Node):
         self.methods.append(method)
 
     def __repr__(self):
-        pass
+        return self.__str__()
+
+    def __str__(self):
+
+        class_block_string = "{"
+        for method in self.methods:
+            class_block_string += f"\n{method}"
+
+        class_block_string += "\n}"
+
+        return class_block_string

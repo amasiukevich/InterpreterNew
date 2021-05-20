@@ -7,3 +7,9 @@ class Class(Node):
 
         self.identifier = identifier
         self.body = body
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"class {self.identifier}{self.body}"

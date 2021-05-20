@@ -9,7 +9,8 @@ class Assign(Statement):
         self.complex_identifier = complex_id
         self.expression = expression
 
-
     def __repr__(self):
+        return self.__str__()
 
-        return f"{self.complex_identifier} = {self.expression}"
+    def __str__(self):
+        return f"{self.complex_identifier} = {self.expression};"

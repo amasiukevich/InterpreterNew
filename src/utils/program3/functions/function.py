@@ -12,8 +12,9 @@ class Function(Node):
         self.parameters = parameters
         self.body = body
 
-        # TODO: what's with the returning value?
-
 
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
         return f"define {self.identifier} ({self.parameters})\n{self.body}"

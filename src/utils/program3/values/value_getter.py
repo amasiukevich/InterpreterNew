@@ -8,8 +8,15 @@ class ValueGetter(Value):
         self.base_getters = base_getters
 
 
+    def __str__(self):
+
+        if self.get_num_base_getters() == 1:
+            return f"{self.base_getters[0]}"
+        else:
+            return ".".join(self.base_getters)
+
     def __repr__(self):
-        return ".".join(self.base_getters)
+        return self.__str__()
 
 
     def get_num_base_getters(self):

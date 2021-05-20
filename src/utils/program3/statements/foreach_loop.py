@@ -14,8 +14,10 @@ class ForeachLoop(Loop):
         self.block = block
 
 
-
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         return f"foreach {self.identifier} in {self.expression}\n" \
                f"{self.block}"

@@ -32,3 +32,25 @@ class Program(Node):
 
     def function_exists(self, function_identifier):
         return bool(self._functions.get(function_identifier))
+
+
+
+    def __str__(self):
+
+        # TODO: specify the order of functions
+        program_string = ""
+
+        for function in self._functions:
+            program_string += f"\n{function}"
+
+        program_string += "\n"
+        for _class in self._classes:
+            program_string += f"\n{_class}"
+
+        program_string += "\n"
+
+        return program_string
+
+
+    def __repr__(self):
+        return self.__str__()

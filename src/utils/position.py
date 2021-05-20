@@ -23,8 +23,11 @@ class Position():
         self.column = 0
 
 
-    def __repr__(self):
+    def __str__(self):
         return f"line: {self.line}, column: {self.column}"
+
+    def __repr__(self):
+        return self.__str__()
 
 
     def __eq__(self, other):
