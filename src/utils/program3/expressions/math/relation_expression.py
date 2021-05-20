@@ -21,9 +21,10 @@ class RelationExpression(Expression):
     def num_operands(self):
         return len(self.expressions)
 
-
-
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         rel_oper_string = ""
 
@@ -31,14 +32,17 @@ class RelationExpression(Expression):
             rel_oper_string = "_"
         else:
             if self.num_operands() > 1:
-                rel_oper_string += "["
-            rel_oper_string += self.expressions[0]
+                rel_oper_string += "("
+            rel_oper_string += f"{self.expressions[0]}"
 
             for i in range(1, self.num_operands()):
+
+                if self.operators == []:
+                    breakpoint()
                 rel_oper_string += f"{self.operators[i - 1]}"
                 rel_oper_string += self.expressions[i]
 
             if self.num_operands() > 1:
-                rel_oper_string += "]"
+                rel_oper_string += ")"
 
         return rel_oper_string

@@ -12,6 +12,9 @@ class BasicValueGetter(Node):
 
 
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         basic_value_getter_str = f"{self.identifier}"
         if bool(self.rest_call):

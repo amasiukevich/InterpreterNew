@@ -8,7 +8,11 @@ class Argument(Node):
         self.expression = expression
         self.is_by_ref = is_by_ref
 
+
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         argument_str = ""
         if self.is_by_ref:

@@ -17,11 +17,15 @@ class Block(Node):
         self.statements.append(statement)
 
 
-    def __repr__(self):
+    def __str__(self):
 
         block_string = "{"
         for statement in self.statements:
-            block_string += f"{statement}\n"
-        block_string += "}"
+            block_string += f"\n{statement}"
+        block_string += "\n}"
 
         return block_string
+
+
+    def __repr__(self):
+        return self.__str__()

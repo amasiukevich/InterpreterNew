@@ -18,17 +18,18 @@ class OrExpression(Expression):
     def num_operands(self):
         return len(self.expressions)
 
-
-
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         or_expr_str = "_"
 
         if self.num_operands() > 0:
 
             or_expr_str = f"{self.expressions[0]}"
-            for i in range(1, self.num_operands):
-                or_expr_str.append(" || ")
-                or_expr_str.append(self.expressions[i])
+            for i in range(1, self.num_operands()):
+                or_expr_str += " || "
+                or_expr_str += f"{self.expressions[i]}"
 
         return or_expr_str

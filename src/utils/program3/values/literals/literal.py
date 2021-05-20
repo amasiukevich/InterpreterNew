@@ -6,5 +6,5 @@ class Literal(Value):
     def __init__(self, value):
         self.value = value
 
-    def __repr__(self):
+    def __str__(self):
         return str(self.value)

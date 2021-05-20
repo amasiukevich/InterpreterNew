@@ -20,7 +20,7 @@ class ComplexIdentifier(Node):
             return "collection_element"
 
 
-    def __repr__(self):
+    def __str__(self):
 
         complex_id_str = ""
         if self.has_this:
@@ -32,3 +32,6 @@ class ComplexIdentifier(Node):
         complex_id_str += f"{self.identifier}"
 
         return complex_id_str
+
+    def __repr__(self):
+        return self.__str__()

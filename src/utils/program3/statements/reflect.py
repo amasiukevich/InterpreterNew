@@ -12,6 +12,9 @@ class Reflect(Node):
 
 
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         reflect_string = "reflect "
         if self.is_recursive:

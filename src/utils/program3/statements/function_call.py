@@ -18,8 +18,10 @@ class FunctionCall(Statement):
         self.rest_call = rest_call
 
 
-
     def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
 
         function_call_string = ""
         if self.has_this:

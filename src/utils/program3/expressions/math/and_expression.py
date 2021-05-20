@@ -20,16 +20,19 @@ class AndExpression(Expression):
         return len(self.expressions)
 
 
-
     def __repr__(self):
+        return self.__str__()
+
+
+    def __str__(self):
 
         and_expr_str = "_"
 
         if self.num_operands() > 0:
 
             and_expr_str = f"{self.expressions[0]}"
-            for i in range(1, self.num_operands):
-                and_expr_str.append(" && ")
-                and_expr_str.append(self.expressions[i])
+            for i in range(1, self.num_operands()):
+                and_expr_str += " && "
+                and_expr_str += f"{self.expressions[i]}"
 
         return and_expr_str
