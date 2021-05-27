@@ -8,9 +8,15 @@ class MultiplyExpression(Expression):
 
     def __init__(self, expressions=[], operators=[]):
 
-        # TODO: expressions check (instances)
-        # TODO: operators check (instances)
-        # TODO: expressions - operators == 1 check
+        if len(expressions) > 0 and not all([isinstance(expr, Expression) for expr in expressions]):
+            raise Exception("All of the components must be of Expression datatype")
+
+        if len(operators) > 0 and not all([isinstance(oper, Operator) for oper in operators]):
+            raise Exception("All of the elements among operators must be of Operator datatype")
+
+        if len(expressions) - len(operators) != 1:
+            raise Exception("Number of exception components must be greater than number of operators by 1")
+
 
         self.expressions = expressions
         self.operators = operators

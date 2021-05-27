@@ -92,10 +92,7 @@ class Parser:
             self.check_current_token(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
-
-            # TODO: must be - error types (missing X token trying to build)
             self.must_be_token(TokenType.OPEN_PARENTHESIS)
-
 
             parameters = self.parse_params()
 
@@ -158,7 +155,6 @@ class Parser:
                 block.add_statement(statement)
                 statement = self.parse_statement()
 
-            # TODO: must be a closing bracket - HANDLE IT!
             self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
 
             return block
@@ -280,9 +276,7 @@ class Parser:
             # block
             block = self.parse_block()
 
-            foreach = ForeachLoop(identifier, or_expression, block)
-
-            return foreach
+            return ForeachLoop(identifier, or_expression, block)
 
 
     def parse_while_loop_statement(self):
@@ -322,7 +316,7 @@ class Parser:
 
             is_recursive = False
 
-            # maybe recursive
+            # may be recursive
             if self.compare_and_consume(TokenType.RECURSIVE):
                 is_recursive = True
 
@@ -453,7 +447,6 @@ class Parser:
             if self.compare_and_consume(TokenType.OPEN_BRACKET):
                 slicing_expr = self.parse_add_expression()
 
-                # TODO: self.must_be here
                 self.must_be_token(TokenType.CLOSING_BRACKET)
 
             base_getter = BasicValueGetter(id_token.value, rest_call, slicing_expr)
@@ -525,7 +518,7 @@ class Parser:
                 and_expression = self.parse_and_expression()
 
                 if not and_expression:
-                    raise Exception("Wrong expression")
+                    raise Exception("Error while parsing OR expression")
                 component_expressions.append(and_expression)
         if len(component_expressions) == 1:
             return and_expression
@@ -545,7 +538,7 @@ class Parser:
 
                 eq_expression = self.parse_eq_expression()
                 if not eq_expression:
-                    raise Exception("Wrong expression")
+                    raise Exception("Error while parsing AND expression")
 
                 component_expressions.append(eq_expression)
         if len(component_expressions) == 1:
@@ -558,8 +551,6 @@ class Parser:
 
         component_expressions = []
 
-        # TODO: resolve problem with the order of the operators.
-        # TODO: link expressions and operators somehow
         operators = []
 
         rel_expression = self.parse_rel_expression()
@@ -572,8 +563,7 @@ class Parser:
                 rel_expression = self.parse_rel_expression()
 
                 if not rel_expression:
-                    # TODO: what's with operators???
-                    raise Exception("Wrong expression")
+                    raise Exception("Error while parsing EQUALITY expression")
 
                 component_expressions.append(rel_expression)
         if len(component_expressions) == 1:
@@ -592,8 +582,6 @@ class Parser:
 
         component_expressions = []
 
-        # TODO: resolve problem with the order of the operators.
-        # TODO: link expressions and operators somehow
         operators = []
 
 
@@ -604,14 +592,13 @@ class Parser:
 
             while self.is_add_token(self.scanner.token.token_type):
 
-                # TODO: resolve problem with the order of the operators
                 operator = self.parse_operator()
                 operators.append(operator)
 
                 add_expression = self.parse_rel_expression()
 
                 if not add_expression:
-                    raise Exception("Wrong expression")
+                    raise Exception("Error while parsing RELATION expression")
 
                 component_expressions.append(add_expression)
 
@@ -634,8 +621,6 @@ class Parser:
 
         component_expressions = []
 
-        # TODO: resolve problem with the order of the operators.
-        # TODO: link expressions and operators somehow
         operators = []
 
         mult_expression = self.parse_mul_expression()
@@ -644,14 +629,17 @@ class Parser:
             component_expressions.append(mult_expression)
 
         while self.is_add_token(self.scanner.token.token_type):
-            # TODO: order of operators
+
+
             operator = self.parse_operator()
             operators.append(operator)
 
             mult_expression = self.parse_mul_expression()
 
             if not mult_expression:
-                raise Exception("Wrong expression")
+                raise Exception("Error while parsing ADD expression")
+
+
             component_expressions.append(mult_expression)
 
         if len(component_expressions) == 1:
@@ -672,8 +660,6 @@ class Parser:
 
         component_expressions = []
 
-        # TODO: resolve problem with the order of the operators.
-        # TODO: link expressions and operators somehow
         operators = []
 
         unary_expression = self.parse_unary_expression()
@@ -689,7 +675,7 @@ class Parser:
             unary_expression = self.parse_unary_expression()
 
             if not unary_expression:
-                raise Exception("Wrong expression")
+                raise Exception("Error while parsing MULTIPLY expression")
             component_expressions.append(unary_expression)
 
         if len(component_expressions) == 1:
@@ -747,7 +733,6 @@ class Parser:
 
             or_expression = self.parse_or_expression()
 
-            # TODO: must be here?
             self.must_be_token(TokenType.CLOSING_PARENTHESIS)
 
             return or_expression
@@ -782,7 +767,6 @@ class Parser:
 
             list_value = self.parse_list_value()
 
-            # TODO: self.must_be here
             self.must_be_token(TokenType.CLOSING_BRACKET)
 
             value = list_value
