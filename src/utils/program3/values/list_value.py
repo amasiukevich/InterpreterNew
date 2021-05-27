@@ -3,15 +3,8 @@ from .value import Value
 
 class ListValue(Value):
 
-
-
     def __init__(self, expressions=[]):
         self.items = expressions
-
-
-    def add_elem(self, expression):
-        self.items.append(expression)
-
 
 
     def __str__(self):

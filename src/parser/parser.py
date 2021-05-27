@@ -92,16 +92,14 @@ class Parser:
             self.check_current_token(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
-            # TODO: must be "open paranthesis" - refactor it
+
             # TODO: must be - error types (missing X token trying to build)
-            self.check_current_token(TokenType.OPEN_PARENTHESIS)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.OPEN_PARENTHESIS)
 
 
             parameters = self.parse_params()
 
-            self.check_current_token(TokenType.CLOSING_PARENTHESIS)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.CLOSING_PARENTHESIS)
 
             block = self.parse_block()
 
@@ -113,6 +111,7 @@ class Parser:
     def parse_class(self):
 
         if self.compare_and_consume(TokenType.CLASS):
+
             self.compare_token_types(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
@@ -129,6 +128,7 @@ class Parser:
 
         param_names = []
         if self.compare_token_types(TokenType.IDENTIFIER):
+
             identifier = self.scanner.get_token_and_move()
 
             param_names.append(identifier.value)
@@ -159,8 +159,7 @@ class Parser:
                 statement = self.parse_statement()
 
             # TODO: must be a closing bracket - HANDLE IT!
-            self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
 
             return block
 
@@ -179,8 +178,7 @@ class Parser:
                 class_block.add_method(method)
                 method = self.parse_function()
 
-            self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
 
             return class_block
 
@@ -238,7 +236,6 @@ class Parser:
 
             or_expression = self.parse_or_expression()
 
-
             if_block = self.parse_block()
             conditions.append(or_expression)
             blocks.append(if_block)
@@ -255,7 +252,6 @@ class Parser:
 
                     conditions.append(or_expression)
                     blocks.append(else_if_block)
-
 
                 # else stuff
                 else_block = self.parse_block()
@@ -276,8 +272,7 @@ class Parser:
             identifier = self.scanner.get_token_and_move()
 
             # In
-            self.check_current_token(TokenType.IN)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.IN)
 
             # or_expression
             or_expression = self.parse_or_expression()
@@ -313,10 +308,9 @@ class Parser:
             if not or_expression:
                 raise ParsingException(token=self.scanner.token, msg="Missing value to return")
 
-            self.check_current_token(TokenType.SEMICOLON)
+            self.must_be_token(TokenType.SEMICOLON)
 
             return_statement = Return(or_expression)
-            self.scanner.next_token()
 
             return return_statement
 
@@ -336,9 +330,7 @@ class Parser:
             or_expression = self.parse_or_expression()
 
             # semicolon
-            # TODO: some function here (self.must_be???)
-            self.check_current_token(TokenType.SEMICOLON)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.SEMICOLON)
 
             reflect = Reflect(or_expression, is_recursive)
 
@@ -361,15 +353,12 @@ class Parser:
         has_this = False
         identifier = None
 
-        if self.compare_token_types(TokenType.THIS):
+        if self.compare_and_consume(TokenType.THIS):
 
             # TODO: Access object Expression
             has_this = True
-            self.scanner.next_token()
 
-            # TODO: refactorize this - must be???
-            self.check_current_token(TokenType.ACCESS)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.ACCESS)
 
         # value_getter
         value_getter = self.parse_value_getter()
@@ -409,9 +398,7 @@ class Parser:
 
                     # self.scanner.next_token()
 
-                    # TODO: self.must_be here
-                    self.check_current_token(TokenType.SEMICOLON)
-                    self.scanner.next_token()
+                    self.must_be_token(TokenType.SEMICOLON)
 
                     assign_statement = Assign(result, or_expression)
 
@@ -442,9 +429,8 @@ class Parser:
 
             base_getters.append(base_getter)
 
-            while self.compare_token_types(TokenType.ACCESS):
+            while self.compare_and_consume(TokenType.ACCESS):
 
-                self.scanner.next_token()
                 base_getter = self.parse_basic_value_getter()
                 base_getters.append(base_getter)
 
@@ -467,10 +453,8 @@ class Parser:
             if self.compare_and_consume(TokenType.OPEN_BRACKET):
                 slicing_expr = self.parse_add_expression()
 
-
                 # TODO: self.must_be here
-                self.check_current_token(TokenType.CLOSING_BRACKET)
-                self.scanner.next_token()
+                self.must_be_token(TokenType.CLOSING_BRACKET)
 
             base_getter = BasicValueGetter(id_token.value, rest_call, slicing_expr)
 
@@ -485,10 +469,9 @@ class Parser:
 
             arguments = self.parse_arguments()
 
-            self.check_current_token(TokenType.CLOSING_PARENTHESIS)
+            self.must_be_token(TokenType.CLOSING_PARENTHESIS)
 
             rest_function_call = RestFunctionCall(arguments)
-            self.scanner.next_token()
 
             return rest_function_call
 
@@ -532,84 +515,71 @@ class Parser:
 
     def parse_or_expression(self):
 
-        or_expression = OrExpression(expressions=[])
+        component_expressions = []
 
         and_expression = self.parse_and_expression()
-
-        # TODO: initialize object as a last thing
-
         if and_expression:
 
-            or_expression.expressions.append(and_expression)
-
+            component_expressions.append(and_expression)
             while self.compare_and_consume(TokenType.OR):
-
                 and_expression = self.parse_and_expression()
 
                 if not and_expression:
                     raise Exception("Wrong expression")
-
-                or_expression.expressions.append(and_expression)
-
-        # TODO: len here
-        if or_expression.num_operands() == 1:
+                component_expressions.append(and_expression)
+        if len(component_expressions) == 1:
             return and_expression
 
-        return or_expression
-
+        return OrExpression(component_expressions)
 
 
     def parse_and_expression(self):
 
-        # TODO: object creation at the end
-        and_expression = AndExpression(expressions=[])
+        component_expressions = []
 
         eq_expression = self.parse_eq_expression()
+        if eq_expression:
+            component_expressions.append(eq_expression)
 
-        and_expression.expressions.append(eq_expression)
+            while self.compare_and_consume(TokenType.AND):
 
-        while self.compare_and_consume(TokenType.AND):
+                eq_expression = self.parse_eq_expression()
+                if not eq_expression:
+                    raise Exception("Wrong expression")
 
-            eq_expression = self.parse_eq_expression()
-
-            if not eq_expression:
-                raise Exception("Wrong expression")
-
-            and_expression.expressions.append(eq_expression)
-
-        # TODO: len here
-        if and_expression.num_operands() == 1:
+                component_expressions.append(eq_expression)
+        if len(component_expressions) == 1:
             return eq_expression
 
-        return and_expression
-
+        return AndExpression(component_expressions)
 
 
     def parse_eq_expression(self):
 
-        # TODO: object creation at the end
-        eq_expression = EqualityExpression(expressions=[])
+        component_expressions = []
+
+        # TODO: resolve problem with the order of the operators.
+        # TODO: link expressions and operators somehow
+        operators = []
 
         rel_expression = self.parse_rel_expression()
+        if rel_expression:
+            component_expressions.append(rel_expression)
 
-        eq_expression.expressions.append(rel_expression)
+            while self.is_equality_token(self.scanner.token.token_type):
 
-        while self.is_equality_token(self.scanner.token.token_type):
+                operators.append(self.parse_operator())
+                rel_expression = self.parse_rel_expression()
 
-            # TODO: resolve problem with the order of the operators
-            eq_expression.operators.append(self.parse_operator())
-            rel_expression = self.parse_rel_expression()
+                if not rel_expression:
+                    # TODO: what's with operators???
+                    raise Exception("Wrong expression")
 
-            if not rel_expression:
-                raise Exception("Wrong expression")
-
-            eq_expression.expressions.append(rel_expression)
-
-        # TODO: len here
-        if eq_expression.num_operands() == 1:
+                component_expressions.append(rel_expression)
+        if len(component_expressions) == 1:
             return rel_expression
 
-        return eq_expression
+        return EqualityExpression(component_expressions, operators)
 
 
     def is_equality_token(self, token_type):
@@ -620,31 +590,35 @@ class Parser:
 
     def parse_rel_expression(self):
 
-        # TODO: Object creation at the end
-        rel_expression = RelationExpression(expressions=[])
+        component_expressions = []
+
+        # TODO: resolve problem with the order of the operators.
+        # TODO: link expressions and operators somehow
+        operators = []
+
 
         add_expression = self.parse_add_expression()
 
-        rel_expression.expressions.append(add_expression)
+        if add_expression:
+            component_expressions.append(add_expression)
 
-        while self.is_add_token(self.scanner.token.token_type):
+            while self.is_add_token(self.scanner.token.token_type):
 
-            # TODO: resolve problem with the order of the operators
-            operator = self.parse_operator()
-            rel_expression.operators.append(operator)
+                # TODO: resolve problem with the order of the operators
+                operator = self.parse_operator()
+                operators.append(operator)
 
-            add_expression = self.parse_rel_expression()
+                add_expression = self.parse_rel_expression()
 
-            if not rel_expression:
-                raise Exception("Wrong expression")
+                if not add_expression:
+                    raise Exception("Wrong expression")
 
-            rel_expression.expressions.append(add_expression)
+                component_expressions.append(add_expression)
 
-        # TODO: len here
-        if rel_expression.num_operands() == 1:
+        if len(component_expressions) == 1:
             return add_expression
 
-        return rel_expression
+        return RelationExpression(component_expressions, operators)
 
 
 
@@ -658,32 +632,32 @@ class Parser:
 
     def parse_add_expression(self):
 
-        # TODO: object creation at the end
-        add_expression = AddExpression(expressions=[])
+        component_expressions = []
+
+        # TODO: resolve problem with the order of the operators.
+        # TODO: link expressions and operators somehow
+        operators = []
 
         mult_expression = self.parse_mul_expression()
 
-        add_expression.expressions.append(mult_expression)
+        if mult_expression:
+            component_expressions.append(mult_expression)
 
         while self.is_add_token(self.scanner.token.token_type):
-
             # TODO: order of operators
             operator = self.parse_operator()
-            add_expression.operators.append(operator)
+            operators.append(operator)
 
             mult_expression = self.parse_mul_expression()
 
             if not mult_expression:
                 raise Exception("Wrong expression")
+            component_expressions.append(mult_expression)
 
-            add_expression.expressions.append(mult_expression)
-
-        # TODO len here
-        if add_expression.num_operands() == 1:
+        if len(component_expressions) == 1:
             return mult_expression
 
-        return add_expression
-
+        return AddExpression(component_expressions, operators)
 
 
 
@@ -696,30 +670,32 @@ class Parser:
 
     def parse_mul_expression(self):
 
-        # TODO: object creation at the end
-        mul_expression = MultiplyExpression(expressions=[])
+        component_expressions = []
+
+        # TODO: resolve problem with the order of the operators.
+        # TODO: link expressions and operators somehow
+        operators = []
 
         unary_expression = self.parse_unary_expression()
 
-        mul_expression.expressions.append(unary_expression)
+        if unary_expression:
+            component_expressions.append(unary_expression)
 
         while self.is_mult_token(self.scanner.token.token_type):
 
             operator = self.parse_operator()
-            mul_expression.operators.append(operator)
+            operators.append(operator)
 
             unary_expression = self.parse_unary_expression()
 
             if not unary_expression:
                 raise Exception("Wrong expression")
+            component_expressions.append(unary_expression)
 
-            mul_expression.expressions.append(unary_expression)
-
-        # TODO: len here
-        if mul_expression.num_operands() == 1:
+        if len(component_expressions) == 1:
             return unary_expression
 
-        return mul_expression
+        return MultiplyExpression(component_expressions, operators)
 
 
     def is_mult_token(self, token_type):
@@ -757,6 +733,7 @@ class Parser:
     def parse_negative_unary_expression(self):
 
         if self.compare_and_consume(TokenType.MINUS):
+
             unary_expression = self.parse_unary_expression()
             neg_unary_expression = NegativeUnaryExpression(unary_expression)
 
@@ -771,8 +748,7 @@ class Parser:
             or_expression = self.parse_or_expression()
 
             # TODO: must be here?
-            self.check_current_token(TokenType.CLOSING_PARENTHESIS)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.CLOSING_PARENTHESIS)
 
             return or_expression
 
@@ -807,8 +783,7 @@ class Parser:
             list_value = self.parse_list_value()
 
             # TODO: self.must_be here
-            self.check_current_token(TokenType.CLOSING_BRACKET)
-            self.scanner.next_token()
+            self.must_be_token(TokenType.CLOSING_BRACKET)
 
             value = list_value
 
@@ -823,20 +798,22 @@ class Parser:
 
     def parse_list_value(self):
 
-        list_value = ListValue()
+        component_values = []
         or_expression = self.parse_or_expression()
 
         if or_expression:
-            list_value.add_elem(or_expression)
+            component_values.append(or_expression)
 
         while self.compare_and_consume(TokenType.COMMA):
 
             or_expression = self.parse_or_expression()
 
-            if or_expression:
-                or_expression.add_elem(or_expression)
+            if not or_expression:
+                raise Exception("Wrong expression in the list")
 
-        return list_value
+            component_values.append(or_expression)
+
+        return ListValue(component_values)
 
 
     def token_to_literal(self, token):
@@ -883,3 +860,9 @@ class Parser:
             self.scanner.next_token()
 
         return result
+
+
+    # TODO: info in the exception: Missing 'something' to build 'something'
+    def must_be_token(self, token_type: TokenType):
+        self.check_current_token(token_type)
+        self.scanner.next_token()

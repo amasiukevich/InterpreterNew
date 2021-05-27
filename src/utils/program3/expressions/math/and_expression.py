@@ -15,11 +15,6 @@ class AndExpression(Expression):
         self.expressions = expressions
 
 
-
-    def num_operands(self):
-        return len(self.expressions)
-
-
     def __repr__(self):
         return self.__str__()
 
@@ -28,10 +23,10 @@ class AndExpression(Expression):
 
         and_expr_str = "_"
 
-        if self.num_operands() > 0:
+        if len(self.expressions) > 0:
 
             and_expr_str = f"{self.expressions[0]}"
-            for i in range(1, self.num_operands()):
+            for i in range(1, len(self.expressions)):
                 and_expr_str += " && "
                 and_expr_str += f"{self.expressions[i]}"
 

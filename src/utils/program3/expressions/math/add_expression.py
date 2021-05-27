@@ -15,27 +15,22 @@ class AddExpression(Expression):
         self.operators = operators
 
 
-
-    def num_operands(self):
-        return len(self.expressions)
-
-
     def __repr__(self):
         return self.__str__()
 
 
     def __str__(self):
         mult_oper_string = ""
-        if self.num_operands == 0:
+        if len(self.expressions) == 0:
             mult_oper_string = "_"
         else:
-            if self.num_operands() > 1:
+            if len(self.expressions) > 1:
                 mult_oper_string += "("
             mult_oper_string += f"{self.expressions[0]}"
-            for i in range(1, self.num_operands()):
+            for i in range(1, len(self.expressions)):
                 mult_oper_string += f" {self.operators[i - 1]} "
                 mult_oper_string += f"{self.expressions[i]}"
-            if self.num_operands() > 1:
+            if len(self.expressions) > 1:
                 mult_oper_string += ")"
 
         return mult_oper_string
