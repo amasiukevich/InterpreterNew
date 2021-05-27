@@ -1,15 +1,12 @@
 from src.exceptions.parsing_exception import ParsingException
 from src.scanner.scanner import Scanner
 from src.utils.program3.values.basic_value_getter import BasicValueGetter
-from src.utils.program3.values.collection_element import CollectionElement
 from src.utils.program3.values.this_value_getter import ThisValueGetter
 
 from src.utils.token_type import TokenType
-from src.utils.position import Position
 
 from src.utils.program3.program import Program
 from src.utils.program3.block import Block
-from src.utils.program3.complex_identifier import ComplexIdentifier
 
 from src.utils.program3.functions.function import Function
 from src.utils.program3.functions.parameters import Parameters
@@ -23,7 +20,6 @@ from src.utils.program3.statements.assign import Assign
 from src.utils.program3.statements.comment import Comment
 from src.utils.program3.statements.conditional import Conditional
 from src.utils.program3.statements.foreach_loop import ForeachLoop
-from src.utils.program3.statements.function_call import FunctionCall
 from src.utils.program3.statements.reflect import Reflect
 from src.utils.program3.statements.rest_function_call import RestFunctionCall
 from src.utils.program3.statements._return import Return

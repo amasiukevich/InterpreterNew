@@ -1,6 +1,5 @@
 from .statement import Statement
 from src.utils.program3.expressions.expression import Expression
-from src.utils.program3.complex_identifier import ComplexIdentifier
 
 class Assign(Statement):
 
