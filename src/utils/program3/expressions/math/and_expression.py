@@ -1,5 +1,5 @@
 from src.utils.program3.expressions.expression import Expression
-from src.exceptions.parser_exceptions.parser_exception import ParserException
+
 
 
 class AndExpression(Expression):
