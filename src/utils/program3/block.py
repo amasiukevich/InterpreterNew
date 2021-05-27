@@ -1,7 +1,6 @@
 from src.utils.program3.node import Node
 from src.utils.program3.statements.statement import Statement
 
-from src.exceptions.parser_exceptions.parser_exception import ParserException
 
 class Block(Node):
 

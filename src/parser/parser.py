@@ -1,4 +1,4 @@
-from src.exceptions.parser_exceptions.parser_exception import ParserException
+from src.exceptions.parsing_exception import ParsingException
 from src.scanner.scanner import Scanner
 from src.utils.program3.values.basic_value_getter import BasicValueGetter
 from src.utils.program3.values.collection_element import CollectionElement
@@ -48,6 +48,8 @@ from src.utils.program3.values.literals.bool_literal import BoolLiteral
 from src.utils.program3.values.literals.string_literal import StringLiteral
 
 
+import numpy as np
+
 
 class Parser:
 
@@ -58,6 +60,7 @@ class Parser:
         self.token = scanner.token
 
         self.oper_mapper = OperatorMapper()
+
 
 
     def parse_program(self):
@@ -78,25 +81,19 @@ class Parser:
 
         program = Program(functions, classes)
 
-        if not program.functions_unique():
-            raise ParserException(self.scanner.token_position, "There are duplicates in functions names")
-        if not program.classes_unique():
-            raise ParserException(self.scanner.token_position, "There are duplicates in classes names")
-        if not program.function_exists("main"):
-            raise ParserException(self.scanner.token_position, "There is no function main")
-
         return program
+
+
 
 
     def parse_function(self):
 
-        function_clause = None
-        if self.compare_token_types(TokenType.DEFINE):
-            self.scanner.next_token()
-
+        if self.compare_and_consume(TokenType.DEFINE):
             self.check_current_token(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
+            # TODO: must be "open paranthesis" - refactor it
+            # TODO: must be - error types (missing X token trying to build)
             self.check_current_token(TokenType.OPEN_PARENTHESIS)
             self.scanner.next_token()
 
@@ -106,110 +103,93 @@ class Parser:
             self.check_current_token(TokenType.CLOSING_PARENTHESIS)
             self.scanner.next_token()
 
-
             block = self.parse_block()
-
 
             function_clause = Function(identifier.value, parameters, block)
 
-
-        return function_clause
+            return function_clause
 
 
     def parse_class(self):
 
-
-        class_clause = None
-        if self.compare_token_types(TokenType.CLASS):
-
-            self.scanner.next_token()
+        if self.compare_and_consume(TokenType.CLASS):
             self.compare_token_types(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
 
             # class block
             block = self.parse_class_block()
 
+            # TODO: in class initializer verify if block is valid (contains name the same as class)
             class_clause = Class(identifier.value, block)
 
-
-        return class_clause
-
+            return class_clause
 
 
     def parse_params(self):
 
-
-        params = Parameters()
+        param_names = []
         if self.compare_token_types(TokenType.IDENTIFIER):
-
             identifier = self.scanner.get_token_and_move()
 
-            params.add_parameter(identifier.value)
+            param_names.append(identifier.value)
 
+            while self.compare_and_consume(TokenType.COMMA):
 
-            while self.compare_token_types(TokenType.COMMA):
-
-                self.scanner.next_token()
                 self.check_current_token(TokenType.IDENTIFIER)
                 identifier = self.scanner.get_token_and_move()
+                param_names.append(identifier.value)
 
-                params.add_parameter(identifier.value)
+            params = Parameters(param_names)
 
-        return params
+            return params
 
 
 
     def parse_block(self):
 
+        if self.compare_and_consume(TokenType.OPEN_CURLY_BRACKET):
 
-        self.compare_token_types(TokenType.OPEN_CURLY_BRACKET)
-        # token = self.scanner.get_token_and_move()
+            block = Block(statements=[])
 
-        self.scanner.next_token()
-
-        block = Block(statements=[])
-
-        # parse statements
-        statement = self.parse_statement()
-
-        while statement:
-            block.add_statement(statement)
+            # parse statements
             statement = self.parse_statement()
 
+            while statement:
+                block.add_statement(statement)
+                statement = self.parse_statement()
 
-        self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
-        self.scanner.next_token()
+            # TODO: must be a closing bracket - HANDLE IT!
+            self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
+            self.scanner.next_token()
 
-        return block
+            return block
 
 
 
     def parse_class_block(self):
 
+        if self.compare_and_consume(TokenType.OPEN_CURLY_BRACKET):
 
-        self.compare_token_types(TokenType.OPEN_CURLY_BRACKET)
-        self.scanner.next_token()
+            class_block = ClassBlock()
 
-        class_block = ClassBlock()
-
-        # parsing methods
-        method = self.parse_function()
-
-        while method:
-            class_block.add_method(method)
+            # parsing methods
             method = self.parse_function()
 
-        self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
-        self.scanner.next_token()
+            while method:
+                class_block.add_method(method)
+                method = self.parse_function()
 
-        return class_block
+            self.check_current_token(TokenType.CLOSING_CURLY_BRACKET)
+            self.scanner.next_token()
+
+            return class_block
 
 
 
     def parse_statement(self):
 
         # TODO: write it better
-        statement = None
+        # statement = None
 
         # parse conditional
         statement = self.parse_conditional_statement()
@@ -248,35 +228,29 @@ class Parser:
         if statement:
             return statement
 
-        return statement
-
 
     def parse_conditional_statement(self):
 
-        conditional = None
-        if (self.compare_token_types(TokenType.IF)):
+        if self.compare_and_consume(TokenType.IF):
 
             conditions = []
             blocks = []
 
-            self.scanner.next_token()
             or_expression = self.parse_or_expression()
-            self.scanner.next_token()
+
 
             if_block = self.parse_block()
             conditions.append(or_expression)
             blocks.append(if_block)
 
             # contains ELSE clause
-            if self.compare_token_types(TokenType.ELSE):
+            if self.compare_and_consume(TokenType.ELSE):
 
-                self.scanner.next_token()
-                while self.compare_token_types(TokenType.IF):
+                while self.compare_and_consume(TokenType.IF):
 
                     # else if stuff
-                    self.scanner.next_token()
                     or_expression = self.parse_or_expression()
-                    self.scanner.next_token()
+
                     else_if_block = self.parse_block()
 
                     conditions.append(or_expression)
@@ -289,16 +263,14 @@ class Parser:
 
             conditional = Conditional(conditions, blocks)
 
-        return conditional
+            return conditional
 
 
 
     def parse_foreach_loop_statement(self):
 
-        foreach_loop = None
-        if self.compare_token_types(TokenType.FOREACH):
+        if self.compare_and_consume(TokenType.FOREACH):
 
-            self.scanner.next_token()
             # Identifier
             self.check_current_token(TokenType.IDENTIFIER)
             identifier = self.scanner.get_token_and_move()
@@ -306,7 +278,6 @@ class Parser:
             # In
             self.check_current_token(TokenType.IN)
             self.scanner.next_token()
-
 
             # or_expression
             or_expression = self.parse_or_expression()
@@ -316,15 +287,12 @@ class Parser:
 
             foreach = ForeachLoop(identifier, or_expression, block)
 
-        return foreach_loop
+            return foreach
 
 
     def parse_while_loop_statement(self):
 
-        while_loop = None
-        if self.compare_token_types(TokenType.WHILE):
-            self.scanner.next_token()
-
+        if self.compare_and_consume(TokenType.WHILE):
             # Expression
             or_expression = self.parse_or_expression()
 
@@ -333,58 +301,59 @@ class Parser:
 
             while_loop = WhileLoop(or_expression, block)
 
-        return while_loop
+            return while_loop
 
 
     def parse_return(self):
 
-        return_statement = None
-        if (self.compare_token_types(TokenType.RETURN)):
-            token = self.scanner.get_token_and_move()
+        if self.compare_and_consume(TokenType.RETURN):
+
             or_expression = self.parse_or_expression()
 
             if not or_expression:
-                raise ParserException(self.scanner.token, "Missing value to return")
+                raise ParsingException(token=self.scanner.token, msg="Missing value to return")
 
             self.check_current_token(TokenType.SEMICOLON)
 
             return_statement = Return(or_expression)
             self.scanner.next_token()
 
-        return return_statement
+            return return_statement
+
+
 
     def parse_reflect_statement(self):
 
-        reflect = None
-        if self.compare_token_types(TokenType.REFLECT):
-            self.scanner.next_token()
+        if self.compare_and_consume(TokenType.REFLECT):
+
             is_recursive = False
 
             # maybe recursive
-            if self.compare_token_types(TokenType.RECURSIVE):
+            if self.compare_and_consume(TokenType.RECURSIVE):
                 is_recursive = True
 
             # or_expression
             or_expression = self.parse_or_expression()
 
             # semicolon
-            self.ckeck_current_token(TokenType.SEMICOLON)
+            # TODO: some function here (self.must_be???)
+            self.check_current_token(TokenType.SEMICOLON)
             self.scanner.next_token()
 
             reflect = Reflect(or_expression, is_recursive)
 
-        return reflect
+            return reflect
 
 
 
     def parse_comment_statement(self):
 
-        comment = None
         if self.compare_token_types(TokenType.COMMENT):
+
             token = self.scanner.get_token_and_move()
             comment = Comment(token.value)
 
-        return comment
+            return comment
 
 
     def parse_assign_or_function_call(self):
@@ -393,8 +362,12 @@ class Parser:
         identifier = None
 
         if self.compare_token_types(TokenType.THIS):
+
+            # TODO: Access object Expression
             has_this = True
             self.scanner.next_token()
+
+            # TODO: refactorize this - must be???
             self.check_current_token(TokenType.ACCESS)
             self.scanner.next_token()
 
@@ -428,59 +401,60 @@ class Parser:
 
                 result = ComplexIdentifier(has_this=has_this, value_getter=value_getter, identifier=identifier)
 
-                if self.compare_token_types(TokenType.ASSIGN):
-
-                    # =
-                    self.scanner.next_token()
+                # =
+                if self.compare_and_consume(TokenType.ASSIGN):
 
                     # or_expression
                     or_expression = self.parse_or_expression()
 
                     # self.scanner.next_token()
 
+                    # TODO: self.must_be here
                     self.check_current_token(TokenType.SEMICOLON)
                     self.scanner.next_token()
+
                     assign_statement = Assign(result, or_expression)
 
                     return assign_statement
             else:
+
+                # TODO: custom exception here
                 raise Exception("Unknown statement")
 
 
     def parse_value_getter(self):
 
-        value_getter = None
-
         base_getters = self.parse_base_getters()
 
-        if any(base_getters):
-            value_getter = ValueGetter(base_getters)
-
-        return value_getter
+        if base_getters:
+            return ValueGetter(base_getters)
 
 
     def parse_base_getters(self):
 
-        base_getters = []
 
         # Access operators
         base_getter = self.parse_basic_value_getter()
 
-        while self.compare_token_types(TokenType.ACCESS):
+        if base_getter:
 
-            self.scanner.next_token()
+            base_getters = []
+
             base_getters.append(base_getter)
-            base_getter = self.parse_basic_value_getter()
 
-        base_getters.append(base_getter)
+            while self.compare_token_types(TokenType.ACCESS):
 
-        return base_getters
+                self.scanner.next_token()
+                base_getter = self.parse_basic_value_getter()
+                base_getters.append(base_getter)
+
+
+            return base_getters
 
 
 
     def parse_basic_value_getter(self):
 
-        base_getter = None
         slicing_expr = None
 
         if self.compare_token_types(TokenType.IDENTIFIER):
@@ -490,23 +464,25 @@ class Parser:
             rest_call = self.parse_rest_function_call()
 
             # brackets here
-            if self.compare_token_types(TokenType.OPEN_BRACKET):
-                self.scanner.next_token()
+            if self.compare_and_consume(TokenType.OPEN_BRACKET):
                 slicing_expr = self.parse_add_expression()
+
+
+                # TODO: self.must_be here
                 self.check_current_token(TokenType.CLOSING_BRACKET)
+                self.scanner.next_token()
 
             base_getter = BasicValueGetter(id_token.value, rest_call, slicing_expr)
 
-        return base_getter
+            return base_getter
 
 
-
+    # TODO: create parse function call
+    # TODO: pass here the id of the function
     def parse_rest_function_call(self):
 
-        rest_function_call = None
-        if self.compare_token_types(TokenType.OPEN_PARENTHESIS):
+        if self.compare_and_consume(TokenType.OPEN_PARENTHESIS):
 
-            self.scanner.next_token()
             arguments = self.parse_arguments()
 
             self.check_current_token(TokenType.CLOSING_PARENTHESIS)
@@ -514,11 +490,7 @@ class Parser:
             rest_function_call = RestFunctionCall(arguments)
             self.scanner.next_token()
 
-        return rest_function_call
-
-
-    def parse_built_in_function(self):
-        pass
+            return rest_function_call
 
 
 
@@ -527,11 +499,14 @@ class Parser:
         list_of_args = []
 
         argument = self.parse_argument()
-
-        while self.compare_token_types(TokenType.COMMA):
+        if argument:
 
             list_of_args.append(argument)
-            argument = self.parse_argument()
+
+            while self.compare_token_types(TokenType.COMMA):
+
+                list_of_args.append(argument)
+                argument = self.parse_argument()
 
         arguments = Arguments(list_of_args)
 
@@ -541,12 +516,10 @@ class Parser:
 
     def parse_argument(self):
 
-        argument = None
         is_by_ref = False
         # by ref
-        if self.compare_token_types(TokenType.BY_REF):
+        if self.compare_and_consume(TokenType.BY_REF):
             is_by_ref = True
-            self.scanner.next_token()
 
         # argument (or_expression)
         or_expression = self.parse_or_expression()
@@ -563,19 +536,22 @@ class Parser:
 
         and_expression = self.parse_and_expression()
 
-        or_expression.expressions.append(and_expression)
+        # TODO: initialize object as a last thing
 
-        while self.compare_token_types(TokenType.OR):
-
-            self.scanner.next_token()
-            and_expression = self.parse_and_expression()
-
-            if not and_expression:
-                raise Exception("Wrong expression")
+        if and_expression:
 
             or_expression.expressions.append(and_expression)
 
+            while self.compare_and_consume(TokenType.OR):
 
+                and_expression = self.parse_and_expression()
+
+                if not and_expression:
+                    raise Exception("Wrong expression")
+
+                or_expression.expressions.append(and_expression)
+
+        # TODO: len here
         if or_expression.num_operands() == 1:
             return and_expression
 
@@ -585,15 +561,15 @@ class Parser:
 
     def parse_and_expression(self):
 
+        # TODO: object creation at the end
         and_expression = AndExpression(expressions=[])
 
         eq_expression = self.parse_eq_expression()
 
         and_expression.expressions.append(eq_expression)
 
-        while self.compare_token_types(TokenType.AND):
+        while self.compare_and_consume(TokenType.AND):
 
-            self.scanner.next_token()
             eq_expression = self.parse_eq_expression()
 
             if not eq_expression:
@@ -601,7 +577,7 @@ class Parser:
 
             and_expression.expressions.append(eq_expression)
 
-
+        # TODO: len here
         if and_expression.num_operands() == 1:
             return eq_expression
 
@@ -611,6 +587,7 @@ class Parser:
 
     def parse_eq_expression(self):
 
+        # TODO: object creation at the end
         eq_expression = EqualityExpression(expressions=[])
 
         rel_expression = self.parse_rel_expression()
@@ -619,10 +596,8 @@ class Parser:
 
         while self.is_equality_token(self.scanner.token.token_type):
 
-
             # TODO: resolve problem with the order of the operators
             eq_expression.operators.append(self.parse_operator())
-
             rel_expression = self.parse_rel_expression()
 
             if not rel_expression:
@@ -630,6 +605,7 @@ class Parser:
 
             eq_expression.expressions.append(rel_expression)
 
+        # TODO: len here
         if eq_expression.num_operands() == 1:
             return rel_expression
 
@@ -644,6 +620,7 @@ class Parser:
 
     def parse_rel_expression(self):
 
+        # TODO: Object creation at the end
         rel_expression = RelationExpression(expressions=[])
 
         add_expression = self.parse_add_expression()
@@ -663,6 +640,7 @@ class Parser:
 
             rel_expression.expressions.append(add_expression)
 
+        # TODO: len here
         if rel_expression.num_operands() == 1:
             return add_expression
 
@@ -680,6 +658,7 @@ class Parser:
 
     def parse_add_expression(self):
 
+        # TODO: object creation at the end
         add_expression = AddExpression(expressions=[])
 
         mult_expression = self.parse_mul_expression()
@@ -688,6 +667,7 @@ class Parser:
 
         while self.is_add_token(self.scanner.token.token_type):
 
+            # TODO: order of operators
             operator = self.parse_operator()
             add_expression.operators.append(operator)
 
@@ -698,6 +678,7 @@ class Parser:
 
             add_expression.expressions.append(mult_expression)
 
+        # TODO len here
         if add_expression.num_operands() == 1:
             return mult_expression
 
@@ -715,6 +696,7 @@ class Parser:
 
     def parse_mul_expression(self):
 
+        # TODO: object creation at the end
         mul_expression = MultiplyExpression(expressions=[])
 
         unary_expression = self.parse_unary_expression()
@@ -733,6 +715,7 @@ class Parser:
 
             mul_expression.expressions.append(unary_expression)
 
+        # TODO: len here
         if mul_expression.num_operands() == 1:
             return unary_expression
 
@@ -759,45 +742,40 @@ class Parser:
         general_value = self.parse_general_value()
         if general_value:
             return UnaryExpression(general_value)
-        else:
-            return None
-
 
 
     def parse_not_unary_expression(self):
 
-        not_unary_expression = None
-        if self.compare_token_types(TokenType.NOT):
-            self.scanner.next_token()
+        if self.compare_and_consume(TokenType.NOT):
+
             unary_expression = self.parse_unary_expression()
             not_unary_expression = NotUnaryExpression(unary_expression)
 
-        return not_unary_expression
+            return not_unary_expression
 
 
     def parse_negative_unary_expression(self):
 
-        neg_unary_expression = None
-        if self.compare_token_types(TokenType.MINUS):
-            self.scanner.next_token()
+        if self.compare_and_consume(TokenType.MINUS):
             unary_expression = self.parse_unary_expression()
             neg_unary_expression = NegativeUnaryExpression(unary_expression)
 
-        return neg_unary_expression
+            return neg_unary_expression
 
 
 
     def parse_general_value(self):
 
-        if self.compare_token_types(TokenType.OPEN_PARENTHESIS):
-            self.scanner.next_token()
+        if self.compare_and_consume(TokenType.OPEN_PARENTHESIS):
 
             or_expression = self.parse_or_expression()
 
+            # TODO: must be here?
             self.check_current_token(TokenType.CLOSING_PARENTHESIS)
             self.scanner.next_token()
 
             return or_expression
+
         else:
             return self.parse_value()
 
@@ -819,17 +797,16 @@ class Parser:
 
         token = self.scanner.token
 
-        value = None
         # literal value
         if self.is_literal(token.token_type):
             self.scanner.next_token()
-            value = self.token_to_literal(token.token_type, token.value)
+            value = self.token_to_literal(token)
         # list_value
-        elif self.compare_token_types(TokenType.OPEN_BRACKET):
-            self.scanner.next_token()
+        elif self.compare_and_consume(TokenType.OPEN_BRACKET):
 
             list_value = self.parse_list_value()
 
+            # TODO: self.must_be here
             self.check_current_token(TokenType.CLOSING_BRACKET)
             self.scanner.next_token()
 
@@ -837,7 +814,6 @@ class Parser:
 
         # value_getter
         elif self.compare_token_types(TokenType.IDENTIFIER) or self.compare_token_types(TokenType.THIS):
-
             value_getter = self.parse_value_getter()
             value = value_getter
 
@@ -853,9 +829,8 @@ class Parser:
         if or_expression:
             list_value.add_elem(or_expression)
 
-        while self.compare_token_types(TokenType.COMMA):
+        while self.compare_and_consume(TokenType.COMMA):
 
-            self.scanner.next_token()
             or_expression = self.parse_or_expression()
 
             if or_expression:
@@ -864,20 +839,20 @@ class Parser:
         return list_value
 
 
-    def token_to_literal(self, token_type, value):
+    def token_to_literal(self, token):
 
         literal = None
-        if token_type == TokenType.NUMERIC_LITERAL:
-            if isinstance(value, int):
-                literal = IntLiteral(value)
-            elif isinstance(value, float):
-                literal = FloatLiteral(value)
-        elif token_type == TokenType.STRING_LITERAL:
-            literal = StringLiteral(value[1:-1])
-        elif token_type == TokenType.BOOL_LITERAL:
-            literal = BoolLiteral(value)
+        if token.token_type == TokenType.NUMERIC_LITERAL:
+            if isinstance(token.value, int):
+                literal = IntLiteral(token.value)
+            elif isinstance(token.value, float):
+                literal = FloatLiteral(token.value)
+        elif token.token_type == TokenType.STRING_LITERAL:
+            literal = StringLiteral(token.value[1:-1])
+        elif token.token_type == TokenType.BOOL_LITERAL:
+            literal = BoolLiteral(token.value)
         else:
-            raise Exception(f"Unknown type of literal\n{self.scanner.token}\n{token_type}")
+            raise Exception(f"Unknown type of literal\n{token}\n")
 
         self.scanner.next_token()
         return literal
@@ -893,9 +868,18 @@ class Parser:
 
         token = self.scanner.token
         if not self.compare_token_types(token_type):
-            raise ParserException(self.scanner.token_position, f"{token},{token_type}")
+            raise ParsingException(token=token, token_type=token_type, msg=f"{token},{token_type}")
 
 
 
     def compare_token_types(self, token_type: TokenType):
         return self.scanner.token.token_type == token_type
+
+
+    def compare_and_consume(self, token_type: TokenType):
+
+        result = self.compare_token_types(token_type)
+        if result:
+            self.scanner.next_token()
+
+        return result

@@ -3,28 +3,46 @@ from src.utils.program3.classes._class import Class
 from .node import Node
 
 
+
+def check_unique_names(list_of_names):
+    return len(set(list_of_names)) == len(list_of_names)
+
+
 class Program(Node):
 
     def __init__(self, functions: dict, classes: dict):
 
+        # functions unique
+        if not check_unique_names([function_name for function_name in functions.keys()]):
+
+
+            raise Exception("Names of the functions are not unique")
+
+        # classes unique
+        if not check_unique_names([class_name for class_name in classes.keys()]):
+            raise Exception("Names of the classes are not unique")
+
+        # has main function
+        if not 'main' in [function_name for function_name in functions.keys()]:
+            raise Exception("Function `main` not detected")
+
+        # main function has no parameters
+
         self._functions = functions
         self._classes = classes
 
-    def functions_unique(self):
-        return self.check_names_unique([function_name for function_name in self._functions.keys()])
-
-    def classes_unique(self):
-        return self.check_names_unique([_class_name for _class_name in self._classes.keys()])
-
-    def check_names_unique(self, names_list):
-        return len(list(set(names_list))) == len(names_list)
 
     def add_function(self, function: Function):
-        if self.functions_unique(self._functions + [function.identifier]):
+
+        if check_unique_names(
+                [function_name for function_name in self.functions.keys()] + [function.identifier]
+        ):
             self._functions[function.identifier] = function
 
     def add_class(self, _class: Class):
-        if self.classes_unique(self._classes + [_class.identifier]):
+        if check_unique_names(
+            [class_name for class_name in self._classes.keys()] + [_class.identifier]
+        ):
             self._classes[_class.identifier] = _class
 
     def has_functions(self):

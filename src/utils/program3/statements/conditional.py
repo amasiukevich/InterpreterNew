@@ -2,17 +2,15 @@ from src.utils.program3.block import Block
 from src.utils.program3.statements.statement import Statement
 from src.utils.program3.expressions.expression import Expression
 
-from src.exceptions.parser_exceptions.parser_exception import ParserException
+
 
 
 class Conditional(Statement):
 
 
-
     def __init__(self, conditions: list, blocks: list):
 
 
-        # TODO: move it to the parser class
         # if len(conditions) <= 0:
         #     raise ParserException("At least one condition should be provided")
         # elif not all([isinstance(condition, Expression) for condition in conditions]):
