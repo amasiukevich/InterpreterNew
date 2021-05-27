@@ -10,4 +10,4 @@ class FloatLiteral(Literal):
         return self.__str__()
 
     def __str__(self):
-        return str(super)
+        return super.__str__()

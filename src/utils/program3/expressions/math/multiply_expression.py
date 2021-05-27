@@ -15,8 +15,7 @@ class MultiplyExpression(Expression):
             raise Exception("All of the elements among operators must be of Operator datatype")
 
         if len(expressions) - len(operators) != 1:
-            raise Exception("Number of exception components must be greater than number of operators by 1")
-
+            raise Exception("Number of expression components must be greater than number of operators by 1")
 
         self.expressions = expressions
         self.operators = operators

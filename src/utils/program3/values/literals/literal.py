@@ -7,4 +7,8 @@ class Literal(Value):
         self.value = value
 
     def __str__(self):
-        return str(self.value)
+        return f"{self.value}"
+
+
+    def __repr__(self):
+        return self.__str__()
