@@ -2,14 +2,15 @@ from .node import Node
 from src.utils.program3.values.value_getter import ValueGetter
 from src.utils.program3.values.collection_element import CollectionElement
 
-
+# TODO: remove the class
 class ComplexIdentifier(Node):
 
     def __init__(self, has_this: bool, value_getter: ValueGetter, identifier):
 
         self.has_this = has_this
         self.value_getter = value_getter
-        self.identifier = identifier
+
+        # self.identifier = identifier
 
 
     def last_id_type(self):

@@ -2,6 +2,7 @@ from src.exceptions.parsing_exception import ParsingException
 from src.scanner.scanner import Scanner
 from src.utils.program3.values.basic_value_getter import BasicValueGetter
 from src.utils.program3.values.collection_element import CollectionElement
+from src.utils.program3.values.this_value_getter import ThisValueGetter
 
 from src.utils.token_type import TokenType
 from src.utils.position import Position
@@ -155,7 +156,11 @@ class Parser:
                 block.add_statement(statement)
                 statement = self.parse_statement()
 
-            self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
+            try:
+
+                self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
+            except:
+                breakpoint()
 
             return block
 
@@ -342,73 +347,45 @@ class Parser:
             return comment
 
 
+
     def parse_assign_or_function_call(self):
 
-        has_this = False
-        identifier = None
-
-        if self.compare_and_consume(TokenType.THIS):
-
-            # TODO: Access object Expression
-            has_this = True
-
-            self.must_be_token(TokenType.ACCESS)
-
-        # value_getter
+        # left_part
         value_getter = self.parse_value_getter()
 
-        # restoring the identifier
-        if value_getter and value_getter.get_num_base_getters() >= 1:
 
-            last_base_getter = value_getter.base_getters[-1]
-            value_getter.base_getters.pop()
+        # =
+        if self.compare_and_consume(TokenType.ASSIGN):
+            # assign statement
 
-            identifier = last_base_getter.identifier
+            # or_expression
+            or_expression = self.parse_or_expression()
+            self.must_be_token(TokenType.SEMICOLON)
 
-            # function_call
-            if last_base_getter.rest_call and not last_base_getter.slising_expr:
-                rest_call = last_base_getter.rest_call
+            assign_statement = Assign(value_getter, or_expression)
 
-                return FunctionCall(has_this, identifier, rest_call)
+            return assign_statement
 
-
-            elif not last_base_getter.rest_call:
-
-                # complex_identifier
-                id_name = last_base_getter.identifier
-                if last_base_getter.slicing_expr:
-                    id_slicing_expr = last_base_getter.slicing_expr
-                    identifier = CollectionElement(id_name, id_slicing_expr)
-                else:
-                    identifier = id_name
-
-                result = ComplexIdentifier(has_this=has_this, value_getter=value_getter, identifier=identifier)
-
-                # =
-                if self.compare_and_consume(TokenType.ASSIGN):
-
-                    # or_expression
-                    or_expression = self.parse_or_expression()
-
-                    # self.scanner.next_token()
-
-                    self.must_be_token(TokenType.SEMICOLON)
-
-                    assign_statement = Assign(result, or_expression)
-
-                    return assign_statement
-            else:
-
-                # TODO: custom exception here
-                raise Exception("Unknown statement")
+        elif self.compare_and_consume(TokenType.SEMICOLON):
+            # function call here
+            return value_getter
 
 
     def parse_value_getter(self):
 
+        full_base_getters = []
+        if self.compare_and_consume(TokenType.THIS):
+
+            full_base_getters.append(ThisValueGetter())
+            self.must_be_token(TokenType.ACCESS)
+
         base_getters = self.parse_base_getters()
 
         if base_getters:
-            return ValueGetter(base_getters)
+            full_base_getters += base_getters
+
+        if full_base_getters:
+            return ValueGetter(full_base_getters)
 
 
     def parse_base_getters(self):
@@ -443,6 +420,7 @@ class Parser:
 
             rest_call = self.parse_rest_function_call()
 
+
             # brackets here
             if self.compare_and_consume(TokenType.OPEN_BRACKET):
                 slicing_expr = self.parse_add_expression()
@@ -454,16 +432,19 @@ class Parser:
             return base_getter
 
 
-    # TODO: create parse function call
-    # TODO: pass here the id of the function
     def parse_rest_function_call(self):
+
+        prev_token = self.scanner.token
 
         if self.compare_and_consume(TokenType.OPEN_PARENTHESIS):
 
+            a = self.scanner.token
             arguments = self.parse_arguments()
 
-            self.must_be_token(TokenType.CLOSING_PARENTHESIS)
-
+            try:
+                self.must_be_token(TokenType.CLOSING_PARENTHESIS)
+            except:
+                breakpoint()
             rest_function_call = RestFunctionCall(arguments)
 
             return rest_function_call
@@ -474,15 +455,18 @@ class Parser:
 
         list_of_args = []
 
+        # if self.scanner.token.value == 10 and self.scanner.token.position == Position(line=1, column=18):
+        #     breakpoint()
+
         argument = self.parse_argument()
         if argument:
 
             list_of_args.append(argument)
 
-            while self.compare_token_types(TokenType.COMMA):
+            while self.compare_and_consume(TokenType.COMMA):
 
-                list_of_args.append(argument)
                 argument = self.parse_argument()
+                list_of_args.append(argument)
 
         arguments = Arguments(list_of_args)
 
@@ -492,6 +476,7 @@ class Parser:
 
     def parse_argument(self):
 
+        starting_token = self.scanner.token
         is_by_ref = False
         # by ref
         if self.compare_and_consume(TokenType.BY_REF):
@@ -693,6 +678,7 @@ class Parser:
 
     def parse_unary_expression(self):
 
+
         not_unary_expression = self.parse_not_unary_expression()
         if not_unary_expression:
             return UnaryExpression(not_unary_expression)
@@ -729,6 +715,8 @@ class Parser:
 
     def parse_general_value(self):
 
+
+
         if self.compare_and_consume(TokenType.OPEN_PARENTHESIS):
 
             or_expression = self.parse_or_expression()
@@ -758,9 +746,10 @@ class Parser:
 
         token = self.scanner.token
 
+        value = None
+
         # literal value
         if self.is_literal(token.token_type):
-            self.scanner.next_token()
             value = self.token_to_literal(token)
         # list_value
         elif self.compare_and_consume(TokenType.OPEN_BRACKET):
@@ -773,6 +762,7 @@ class Parser:
 
         # value_getter
         elif self.compare_token_types(TokenType.IDENTIFIER) or self.compare_token_types(TokenType.THIS):
+
             value_getter = self.parse_value_getter()
             value = value_getter
 
@@ -829,7 +819,7 @@ class Parser:
 
         token = self.scanner.token
         if not self.compare_token_types(token_type):
-            raise ParsingException(token=token, token_type=token_type, msg=f"{token},{token_type}")
+            raise ParsingException(token=token, token_type=token_type, msg=f"Expected {token.token_type}, got {token_type}")
 
 
 

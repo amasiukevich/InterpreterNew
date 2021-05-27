@@ -4,13 +4,13 @@ from src.utils.program3.complex_identifier import ComplexIdentifier
 
 class Assign(Statement):
 
-    def __init__(self, complex_id: ComplexIdentifier, expression: Expression):
+    def __init__(self, value_getter, expression: Expression):
 
-        self.complex_identifier = complex_id
+        self.value_getter = value_getter
         self.expression = expression
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-        return f"{self.complex_identifier} = {self.expression};"
+        return f"{self.value_getter} = {self.expression};"
