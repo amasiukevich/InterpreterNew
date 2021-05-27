@@ -7,10 +7,8 @@ class AndExpression(Expression):
 
     def __init__(self, expressions=[]):
 
-
-        # TODO: to the main class
-        # if len(expressions) > 0 and not all([isinstance(expr, Expression) for expr in expressions]):
-        #     raise ParserException("All elements should be of Expression datatype")
+        if len(expressions) > 0 and not all([isinstance(expr, Expression) for expr in expressions]):
+            raise Exception("All component elements should be of Expression datatype")
 
         self.expressions = expressions
 
