@@ -1,6 +1,8 @@
 from src.utils.program3.functions.function import Function
 from src.utils.program3.node import Node
 
+
+
 class ClassBlock(Node):
 
     def __init__(self, methods=[]):
@@ -20,5 +22,9 @@ class ClassBlock(Node):
         return class_block_string
 
 
-    def add_method(self, method: Function):
-        self.methods.append(method)
+    def is_valid_class_block(self, class_name):
+
+        if len(self.methods) > 0:
+            return class_name in [method.identifier for method in self.methods]
+        else:
+            return True

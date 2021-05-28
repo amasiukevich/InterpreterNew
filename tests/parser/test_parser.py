@@ -3,7 +3,13 @@ from src.scanner.scanner import Scanner
 
 from src.data_source.file_source import FileSource
 from src.data_source.string_source import StringSource
-
+from src.utils.program3.expressions.math.add_expression import AddExpression
+from src.utils.program3.expressions.math.and_expression import AndExpression
+from src.utils.program3.expressions.math.equality_expression import EqualityExpression
+from src.utils.program3.expressions.math.multiply_expression import MultiplyExpression
+from src.utils.program3.expressions.math.or_expression import OrExpression
+from src.utils.program3.expressions.math.relation_expression import RelationExpression
+from src.utils.program3.expressions.math.unary_expression import UnaryExpression
 
 from src.utils.program3.functions.function import Function
 from src.utils.program3.classes._class import Class
@@ -20,7 +26,6 @@ from src.utils.program3.statements.assign import Assign
 from src.utils.program3.values.value_getter import ValueGetter
 
 import io
-import os
 
 import unittest
 
@@ -307,33 +312,169 @@ class TestParser(unittest.TestCase):
 
 
     def test_parse_or_expression(self):
-        pass
+
+        programs = [
+            "true || false;",
+            "1 || 2;",
+        ]
+
+        parsed_or_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            or_expression = parser.parse_or_expression()
+            parsed_or_expressions.append(or_expression)
+
+
+        self.assertTrue(
+            all([isinstance(or_expression, OrExpression) for or_expression in parsed_or_expressions])
+        )
+
 
 
 
     def test_parse_and_expression(self):
-        pass
+
+        programs = [
+            "true && false;",
+            "is_good(a) && !is_bad(a);",
+        ]
+
+        parsed_and_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            and_expression = parser.parse_and_expression()
+            parsed_and_expressions.append(and_expression)
+
+        self.assertTrue(
+            all([isinstance(and_expression, AndExpression) for and_expression in parsed_and_expressions])
+        )
+
+
 
 
     def test_parse_eq_expression(self):
-        pass
+
+        programs = [
+            "true == false;",
+            "1 * 10 == 20 / 2;",
+        ]
+
+        parsed_eq_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            eq_expression = parser.parse_eq_expression()
+            parsed_eq_expressions.append(eq_expression)
+
+        self.assertTrue(
+            all([isinstance(eq_expression, EqualityExpression) for eq_expression in parsed_eq_expressions])
+        )
 
 
 
     def test_parse_rel_expression(self):
-        pass
+
+        programs = [
+            "10 > 20;",
+            "10 * 2 + 12 <= 20001;",
+        ]
+
+        parsed_rel_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            rel_expression = parser.parse_rel_expression()
+            parsed_rel_expressions.append(rel_expression)
+
+
+        self.assertTrue(
+            all([isinstance(rel_expression, RelationExpression) for rel_expression in parsed_rel_expressions])
+        )
 
 
 
     def test_parse_add_expression(self):
-        pass
 
+        programs = [
+            "12 + 13;",
+            "12 * 3 + 14 + 15 * 3;",
+        ]
+
+        parsed_add_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            add_expression = parser.parse_add_expression()
+            parsed_add_expressions.append(add_expression)
+
+        self.assertTrue(
+            all([isinstance(add_expression, AddExpression) for add_expression in parsed_add_expressions])
+        )
 
 
 
     def test_parse_mul_expression(self):
-        pass
+
+        programs = [
+            "factorial(9) * 10;",
+            "fibonacci(5) * (-13) * 15;",
+        ]
+
+        parsed_mul_expressions = []
+
+        for program in programs:
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            mul_expression = parser.parse_mul_expression()
+            parsed_mul_expressions.append(mul_expression)
+
+        self.assertTrue(
+            all([isinstance(mul_expression, MultiplyExpression) for mul_expression in parsed_mul_expressions])
+        )
 
 
     def test_parse_unary_expression(self):
-        pass
+
+        # negative unary expression
+        # not unary expression
+        # general value
+
+        programs = [
+            "-15;",
+            "!(is_prime(a));",
+            "(true && false)"
+        ]
+
+        parsed_unary_expressions = []
+
+        for program in programs:
+
+            string_source = StringSource(io.StringIO(program))
+            scanner = Scanner(string_source)
+            parser = Parser(scanner=scanner)
+
+            unary_expression = parser.parse_unary_expression()
+            parsed_unary_expressions.append(unary_expression)
+
+        self.assertTrue(
+            all([isinstance(unary_expr, UnaryExpression) for unary_expr in parsed_unary_expressions])
+        )
