@@ -9,7 +9,7 @@ class ThisValueGetter(Node):
 
 
     def __str__(self):
-        return "this."
+        return "this"
 
 
     def __repr__(self):

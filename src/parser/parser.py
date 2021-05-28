@@ -112,7 +112,6 @@ class Parser:
             # class block
             block = self.parse_class_block()
 
-            # TODO: in class initializer verify if block is valid (contains name the same as class)
             class_clause = Class(identifier.value, block)
 
             return class_clause
@@ -143,20 +142,18 @@ class Parser:
 
         if self.compare_and_consume(TokenType.OPEN_CURLY_BRACKET):
 
-            block = Block(statements=[])
+            statements = []
 
             # parse statements
             statement = self.parse_statement()
 
             while statement:
-                block.add_statement(statement)
+                statements.append(statement)
                 statement = self.parse_statement()
 
-            try:
+            self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
 
-                self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
-            except:
-                breakpoint()
+            block = Block(statements=[])
 
             return block
 
@@ -166,16 +163,18 @@ class Parser:
 
         if self.compare_and_consume(TokenType.OPEN_CURLY_BRACKET):
 
-            class_block = ClassBlock()
+            methods = []
 
             # parsing methods
             method = self.parse_function()
 
             while method:
-                class_block.add_method(method)
+                methods.append(method)
                 method = self.parse_function()
 
             self.must_be_token(TokenType.CLOSING_CURLY_BRACKET)
+
+            class_block = ClassBlock(methods)
 
             return class_block
 
@@ -254,9 +253,7 @@ class Parser:
                 else_block = self.parse_block()
                 blocks.append(else_block)
 
-            conditional = Conditional(conditions, blocks)
-
-            return conditional
+            return Conditional(conditions, blocks)
 
 
 
@@ -437,10 +434,7 @@ class Parser:
             a = self.scanner.token
             arguments = self.parse_arguments()
 
-            try:
-                self.must_be_token(TokenType.CLOSING_PARENTHESIS)
-            except:
-                breakpoint()
+            self.must_be_token(TokenType.CLOSING_PARENTHESIS)
             rest_function_call = RestFunctionCall(arguments)
 
             return rest_function_call
@@ -450,9 +444,6 @@ class Parser:
     def parse_arguments(self):
 
         list_of_args = []
-
-        # if self.scanner.token.value == 10 and self.scanner.token.position == Position(line=1, column=18):
-        #     breakpoint()
 
         argument = self.parse_argument()
         if argument:
@@ -472,13 +463,13 @@ class Parser:
 
     def parse_argument(self):
 
-        starting_token = self.scanner.token
         is_by_ref = False
+
         # by ref
         if self.compare_and_consume(TokenType.BY_REF):
             is_by_ref = True
 
-        # argument (or_expression)
+        # argument
         or_expression = self.parse_or_expression()
 
         argument = Argument(or_expression, is_by_ref)
@@ -507,6 +498,7 @@ class Parser:
         return OrExpression(component_expressions)
 
 
+
     def parse_and_expression(self):
 
         component_expressions = []
@@ -526,6 +518,7 @@ class Parser:
             return eq_expression
 
         return AndExpression(component_expressions)
+
 
 
     def parse_eq_expression(self):
@@ -565,13 +558,12 @@ class Parser:
 
         operators = []
 
-
         add_expression = self.parse_add_expression()
 
         if add_expression:
             component_expressions.append(add_expression)
 
-            while self.is_add_token(self.scanner.token.token_type):
+            while self.is_relation_token(self.scanner.token.token_type):
 
                 operator = self.parse_operator()
                 operators.append(operator)
@@ -590,12 +582,12 @@ class Parser:
 
 
 
-
     def is_relation_token(self, token_type):
         return  token_type == TokenType.GREATER or \
                 token_type == TokenType.GREATER_EQUAL or \
                 token_type == TokenType.LESS_EQUAL or \
                 token_type == TokenType.LESS
+
 
 
     def parse_add_expression(self):
@@ -636,7 +628,6 @@ class Parser:
 
 
 
-
     def parse_mul_expression(self):
 
         component_expressions = []
@@ -665,11 +656,13 @@ class Parser:
         return MultiplyExpression(component_expressions, operators)
 
 
+
     def is_mult_token(self, token_type):
 
         return  token_type == TokenType.MULTIPLY or \
                 token_type == TokenType.DIVIDE  or \
                 token_type == TokenType.MODULO
+
 
 
     def parse_unary_expression(self):
@@ -688,6 +681,7 @@ class Parser:
             return UnaryExpression(general_value)
 
 
+
     def parse_not_unary_expression(self):
 
         if self.compare_and_consume(TokenType.NOT):
@@ -696,6 +690,7 @@ class Parser:
             not_unary_expression = NotUnaryExpression(unary_expression)
 
             return not_unary_expression
+
 
 
     def parse_negative_unary_expression(self):
@@ -710,8 +705,6 @@ class Parser:
 
 
     def parse_general_value(self):
-
-
 
         if self.compare_and_consume(TokenType.OPEN_PARENTHESIS):
 
@@ -738,10 +731,10 @@ class Parser:
             raise Exception("Unknown operator")
 
 
+
     def parse_value(self):
 
         token = self.scanner.token
-
         value = None
 
         # literal value
@@ -786,6 +779,7 @@ class Parser:
         return ListValue(component_values)
 
 
+
     def token_to_literal(self, token):
 
         literal = None
@@ -805,10 +799,12 @@ class Parser:
         return literal
 
 
+
     def is_literal(self, token_type):
         return token_type == TokenType.NUMERIC_LITERAL or \
                token_type == TokenType.STRING_LITERAL or \
                token_type == TokenType.BOOL_LITERAL
+
 
 
     def check_current_token(self, token_type: TokenType):
@@ -823,6 +819,7 @@ class Parser:
         return self.scanner.token.token_type == token_type
 
 
+
     def compare_and_consume(self, token_type: TokenType):
 
         result = self.compare_token_types(token_type)
@@ -830,6 +827,7 @@ class Parser:
             self.scanner.next_token()
 
         return result
+
 
 
     # TODO: info in the exception: Missing 'something' to build 'something'
