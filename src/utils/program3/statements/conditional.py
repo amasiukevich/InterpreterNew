@@ -1,7 +1,8 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.block import Block
 from src.utils.program3.statements.statement import Statement
 from src.utils.program3.expressions.expression import Expression
-
 
 
 
@@ -29,11 +30,14 @@ class Conditional(Statement):
         self.blocks = blocks
 
 
+    def accept(self, visitor: Visitor):
+        pass
+
+
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-
 
         conditional_string = ""
         if_string = "if "

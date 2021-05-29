@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from .parameters import Parameters
 from src.utils.program3.block import Block
 from src.utils.program3.node import Node
@@ -12,6 +14,8 @@ class Function(Node):
         self.parameters = parameters
         self.body = body
 
+    def accept(self, visitor: Visitor):
+        pass
 
     def __repr__(self):
         return self.__str__()

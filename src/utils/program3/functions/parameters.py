@@ -1,6 +1,6 @@
-from ..node import Node
+from src.interpreter.visitor import Visitor
 
-import numpy as np
+from ..node import Node
 
 
 # TODO: move check uniqueness to helpers file
@@ -19,6 +19,8 @@ class Parameters(Node):
 
         self._parameters = param_names
 
+    def accept(self, visitor: Visitor):
+        pass
 
     def __repr__(self):
         return self.__str__()

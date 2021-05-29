@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.expressions.expression import Expression
 from src.utils.program3.expressions.operators.operator import Operator
 
@@ -18,6 +20,9 @@ class AddExpression(Expression):
 
         self.expressions = expressions
         self.operators = operators
+
+    def accept(self, visitor: Visitor):
+        pass
 
 
     def __repr__(self):

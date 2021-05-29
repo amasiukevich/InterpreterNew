@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.node import Node
 from src.utils.program3.statements.statement import Statement
 
@@ -14,6 +16,10 @@ class Block(Node):
 
     def add_statement(self, statement: Statement):
         self.statements.append(statement)
+
+
+    def accept(self, visitor: Visitor):
+        pass
 
 
     def __str__(self):

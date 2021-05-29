@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.expressions.expression import Expression
 
 
@@ -10,6 +12,10 @@ class OrExpression(Expression):
             raise Exception("All component elements should be of Expression datatype")
 
         self.expressions = expressions
+
+
+    def accept(self, visitor: Visitor):
+        pass
 
 
     def __repr__(self):

@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from ..node import Node
 from .argument import Argument
 
@@ -9,7 +11,8 @@ class Arguments(Node):
         # a list of Argument objects
         self.arguments = arguments
 
-
+    def accept(self, visitor: Visitor):
+        pass
 
     def add_argument(self, argument: Argument):
         self._arguments.add(argument)

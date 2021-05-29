@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.node import Node
 from src.utils.program3.statements.rest_function_call import RestFunctionCall
 from src.utils.program3.expressions.math.add_expression import AddExpression
@@ -10,6 +12,9 @@ class BasicValueGetter(Node):
         self.rest_call = rest_call
         self.slicing_expr = slicing_expr
 
+
+    def accept(self, visitor: Visitor):
+        pass
 
     def __repr__(self):
         return self.__str__()

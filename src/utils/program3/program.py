@@ -1,5 +1,8 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.functions.function import Function
 from src.utils.program3.classes._class import Class
+
 from .node import Node
 
 
@@ -48,9 +51,13 @@ class Program(Node):
     def has_functions(self):
         return len(self.functions) > 0
 
+
     def function_exists(self, function_identifier):
         return bool(self._functions.get(function_identifier))
 
+
+    def accept(self, visitor: Visitor):
+        pass
 
 
     def __str__(self):

@@ -1,3 +1,5 @@
+from src.interpreter.visitor import Visitor
+
 from src.utils.program3.node import Node
 from src.utils.program3.expressions.expression import Expression
 
@@ -10,6 +12,8 @@ class Reflect(Node):
         self.expression = expression
         self.is_recursive = is_recursive
 
+    def accept(self, visitor: Visitor):
+        pass
 
     def __repr__(self):
         return self.__str__()
